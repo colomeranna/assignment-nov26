@@ -242,15 +242,15 @@ function PatientRecord({ data, appointment, patient }: RecordProps) {
                       {historyDoctor ? historyDoctor.name : "Unknown doctor"}
                       {historyDoctor && <span className="font-normal text-slate-500"> · {historyDoctor.specialty}</span>}
                     </p>
-                    <dl className="mt-2 space-y-1.5 text-sm">
+                    <dl className="mt-3 space-y-3 text-sm">
                       <div>
                         <dt className="text-xs text-slate-500">Diagnosis</dt>
-                        <dd className="text-slate-700">{a.outcome.diagnosis}</dd>
+                        <dd className="mt-1.5 leading-relaxed text-slate-700">{a.outcome.diagnosis}</dd>
                       </div>
                       {a.outcome.prescription && (
                         <div>
                           <dt className="text-xs text-slate-500">Prescription</dt>
-                          <dd>
+                          <dd className="mt-1.5 leading-relaxed">
                             <PrescriptionText prescription={a.outcome.prescription} />
                           </dd>
                         </div>

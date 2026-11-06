@@ -78,11 +78,11 @@ export function Header() {
             <>
               <label
                 htmlFor="role-switcher"
-                className="sr-only shrink-0 text-xs whitespace-nowrap text-slate-500 sm:not-sr-only"
+                className="sr-only shrink-0 text-xs whitespace-nowrap text-slate-500 md:not-sr-only"
               >
                 Viewing as
               </label>
-              <div className="relative min-w-0 flex-1 sm:w-52 sm:flex-none md:w-72">
+              <div className="relative min-w-0 flex-1 sm:w-72 sm:flex-initial">
                 <span className="pointer-events-none absolute top-1/2 left-2 hidden -translate-y-1/2 sm:inline-flex">
                   <Avatar name={current.name} size="xs" />
                 </span>
@@ -90,7 +90,7 @@ export function Header() {
                   id="role-switcher"
                   value={current.key}
                   onChange={(e) => switchTo(e.target.value)}
-                  className={`${inputClass} appearance-none truncate pr-10 sm:pl-10`}
+                  className={`${inputClass} appearance-none truncate pr-10 sm:pr-9 sm:pl-9`}
                 >
                   {identities.map((i) => (
                     <option key={i.key} value={i.key}>
@@ -103,7 +103,7 @@ export function Header() {
                   className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-slate-400"
                 />
               </div>
-              <span aria-hidden className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 sm:block" />
+              <span aria-hidden className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 md:block" />
               <button
                 type="button"
                 onClick={handleSignOut}

@@ -4,6 +4,7 @@ import { Stethoscope, UserRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { ReactNode } from "react";
+import { ResetDemoButton } from "@/components/reset-demo-button";
 import { Banner, ReadOnlyField, Select, brandSoft, card, primaryButton } from "@/components/ui";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, useDemo } from "@/lib/store";
@@ -72,10 +73,10 @@ function Journey() {
           </li>
         ))}
       </ol>
-      <p className="border-t border-slate-200 pt-3 text-sm text-slate-500">
-        Data is saved in your browser only, so each tester has their own copy. Use Reset demo data at the top of the
-        page to start over.
-      </p>
+      <div className="space-y-2 border-t border-slate-200 pt-3">
+        <p className="text-sm text-slate-500">Data is saved in your browser only, so each tester has their own copy.</p>
+        <ResetDemoButton variant="text" />
+      </div>
     </section>
   );
 }

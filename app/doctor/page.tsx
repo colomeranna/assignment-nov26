@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { Avatar, EmptyState, NewTag, SectionTitle, brandSoft, card } from "@/components/ui";
+import { Avatar, EmptyState, NewTag, SectionTitle, card } from "@/components/ui";
 import { dateParts, formatDay, toLocalDate } from "@/lib/dates";
 import { isNewBooking } from "@/lib/seed";
 import { useDemo } from "@/lib/store";
@@ -25,18 +25,16 @@ function groupByDay(appointments: Appointment[]): { date: string; appointments: 
   return groups;
 }
 
-type TileProps = { icon: ReactNode; label: string; count: number };
+type CountSegmentProps = { icon: ReactNode; label: string; count: number };
 
-function CountTile({ icon, label, count }: TileProps) {
+function CountSegment({ icon, label, count }: CountSegmentProps) {
   return (
-    <div className={`${card} flex items-center gap-3 p-4`}>
-      <span className={`hidden size-10 items-center justify-center rounded-lg sm:inline-flex ${brandSoft} [&_svg]:text-teal-600`}>
-        {icon}
-      </span>
-      <div>
-        <p className="text-2xl leading-none font-semibold text-slate-900 tabular-nums">{count}</p>
-        <p className="mt-1 text-xs font-medium tracking-wide text-slate-500 uppercase">{label}</p>
-      </div>
+    <div className="min-w-0 px-3 py-3 sm:px-5 sm:py-4">
+      <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-slate-500 uppercase">
+        <span className="hidden shrink-0 text-slate-400 sm:inline [&_svg]:size-4">{icon}</span>
+        <span className="truncate">{label}</span>
+      </p>
+      <p className="mt-1 text-2xl font-semibold text-slate-900 tabular-nums">{count}</p>
     </div>
   );
 }
@@ -106,10 +104,10 @@ function Dashboard({ data, doctor }: DashboardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
-        <CountTile icon={<CalendarDays aria-hidden className="size-5" />} label="Today" count={todays.length} />
-        <CountTile icon={<CalendarCheck aria-hidden className="size-5" />} label="Upcoming" count={otherBooked.length} />
-        <CountTile icon={<ClipboardList aria-hidden className="size-5" />} label="Completed" count={completed.length} />
+      <div className={`${card} grid grid-cols-3 divide-x divide-slate-200`}>
+        <CountSegment icon={<CalendarDays aria-hidden />} label="Today" count={todays.length} />
+        <CountSegment icon={<CalendarCheck aria-hidden />} label="Upcoming" count={otherBooked.length} />
+        <CountSegment icon={<ClipboardList aria-hidden />} label="Completed" count={completed.length} />
       </div>
 
       <section className="space-y-3">

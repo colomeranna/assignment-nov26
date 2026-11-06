@@ -6,8 +6,14 @@ import { useEffect, useRef, useState } from "react";
 import { resetDemoData, signOut } from "@/lib/store";
 import { dangerButton, quietButton, secondaryButton } from "./ui";
 
-/** Icon button that confirms in a small popover anchored underneath it. */
-export function ResetDemoButton() {
+type Props = {
+  /** "icon" for the header; "text" for inline use, with the popover opening to the right. */
+  variant?: "icon" | "text";
+};
+
+/** Reset button that confirms in a small popover anchored underneath it. */
+export function ResetDemoButton({ variant = "icon" }: Props) {
+  const isIcon = variant === "icon";
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -44,20 +50,21 @@ export function ResetDemoButton() {
         ref={triggerRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Reset demo data"
-        title="Reset demo data"
+        aria-label={isIcon ? "Reset demo data" : undefined}
+        title={isIcon ? "Reset demo data" : undefined}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className={`${quietButton} px-2`}
+        className={isIcon ? `${quietButton} px-2` : `${quietButton} -ml-2.5`}
       >
         <RotateCcw aria-hidden className="size-4" />
+        {!isIcon && "Reset demo data"}
       </button>
 
       {isOpen && (
         <div
           role="alertdialog"
           aria-label="Reset demo data"
-          className="absolute top-full right-0 z-20 mt-2 flex w-[280px] max-w-[calc(100vw-16px)] gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-md"
+          className={`absolute top-full z-20 mt-2 flex ${isIcon ? "right-0" : "left-0"} w-[280px] max-w-[calc(100vw-16px)] gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-md`}
         >
           <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-rose-600" />
           <div className="space-y-3">
