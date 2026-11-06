@@ -29,7 +29,7 @@ type CountSegmentProps = { icon: ReactNode; label: string; count: number };
 
 function CountSegment({ icon, label, count }: CountSegmentProps) {
   return (
-    <div className="flex min-w-0 items-center justify-center gap-4 px-3 py-3 sm:px-5 sm:py-4">
+    <div className="flex min-w-0 items-center justify-center gap-0.5 px-3 py-3 sm:gap-4 sm:px-5 sm:py-4">
       <p className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-slate-500 uppercase sm:tracking-wide">
         <span className="hidden shrink-0 text-slate-400 sm:inline [&_svg]:size-4">{icon}</span>
         <span className="truncate">{label}</span>
