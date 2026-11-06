@@ -6,7 +6,12 @@ import { useState } from "react";
 import { resetDemoData, signOut } from "@/lib/store";
 import { focusRing, quietButton } from "./ui";
 
-export function ResetDemoButton() {
+type Props = {
+  /** Icon-only below the sm breakpoint, for the phone header. */
+  compact?: boolean;
+};
+
+export function ResetDemoButton({ compact = false }: Props) {
   const router = useRouter();
   const [isConfirming, setIsConfirming] = useState(false);
 
@@ -19,9 +24,15 @@ export function ResetDemoButton() {
 
   if (!isConfirming) {
     return (
-      <button type="button" onClick={() => setIsConfirming(true)} className={quietButton}>
+      <button
+        type="button"
+        onClick={() => setIsConfirming(true)}
+        aria-label={compact ? "Reset demo data" : undefined}
+        title={compact ? "Reset demo data" : undefined}
+        className={quietButton}
+      >
         <RotateCcw aria-hidden className="size-4" />
-        Reset demo data
+        <span className={compact ? "hidden sm:inline" : undefined}>Reset demo data</span>
       </button>
     );
   }

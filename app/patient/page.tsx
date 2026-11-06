@@ -7,8 +7,9 @@ import { Suspense } from "react";
 import { OutcomeDetails } from "@/components/outcome-details";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { Banner, EmptyState, SectionTitle, card, primaryButton } from "@/components/ui";
+import { Banner, EmptyState, NewTag, SectionTitle, card, primaryButton } from "@/components/ui";
 import { dateParts, formatDay } from "@/lib/dates";
+import { isNewOutcome } from "@/lib/seed";
 import { useDemo } from "@/lib/store";
 import type { Appointment, Doctor } from "@/lib/types";
 
@@ -25,9 +26,9 @@ function DateBlock({ date }: { date: string }) {
   );
 }
 
-type CardProps = { appointment: Appointment; doctor: Doctor | undefined };
+type CardProps = { appointment: Appointment; doctor: Doctor | undefined; seededAt: string };
 
-function AppointmentCard({ appointment, doctor }: CardProps) {
+function AppointmentCard({ appointment, doctor, seededAt }: CardProps) {
   return (
     <li className={`${card} space-y-4 p-4 sm:p-5`}>
       <div className="flex items-start gap-4">
@@ -43,7 +44,10 @@ function AppointmentCard({ appointment, doctor }: CardProps) {
                 "Unknown doctor"
               )}
             </p>
-            <StatusBadge status={appointment.status} />
+            <span className="flex items-center gap-2">
+              {appointment.status === "completed" && isNewOutcome(appointment, seededAt) && <NewTag>New outcome</NewTag>}
+              <StatusBadge status={appointment.status} />
+            </span>
           </div>
           <p className="flex items-center gap-1.5 text-sm text-slate-600">
             <Clock aria-hidden className="size-4 text-slate-400" />
@@ -98,7 +102,7 @@ function MyAppointments() {
         ) : (
           <ul className="space-y-3">
             {upcoming.map((a) => (
-              <AppointmentCard key={a.id} appointment={a} doctor={findDoctor(a.doctorId)} />
+              <AppointmentCard key={a.id} appointment={a} doctor={findDoctor(a.doctorId)} seededAt={demo.data.seededAt} />
             ))}
           </ul>
         )}
@@ -111,7 +115,7 @@ function MyAppointments() {
         ) : (
           <ul className="space-y-3">
             {completed.map((a) => (
-              <AppointmentCard key={a.id} appointment={a} doctor={findDoctor(a.doctorId)} />
+              <AppointmentCard key={a.id} appointment={a} doctor={findDoctor(a.doctorId)} seededAt={demo.data.seededAt} />
             ))}
           </ul>
         )}

@@ -98,6 +98,14 @@ export function Banner({ tone, children, onDismiss }: BannerProps) {
   );
 }
 
+export function NewTag({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 ring-1 ring-teal-200 ring-inset">
+      {children}
+    </span>
+  );
+}
+
 type EmptyStateProps = { icon: ReactNode; text: string };
 
 export function EmptyState({ icon, text }: EmptyStateProps) {

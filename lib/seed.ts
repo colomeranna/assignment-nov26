@@ -1,5 +1,5 @@
-import { isWeekday, nthWeekday, toLocalDate } from "./dates";
-import type { Appointment, ConsultationOutcome, DemoData, Doctor, Patient } from "./types";
+import { isWeekday, nthWeekday, toLocalDate, toLocalDateTime } from "./dates";
+import type { Appointment, CompletedAppointment, ConsultationOutcome, DemoData, Doctor, Patient } from "./types";
 
 export const DEMO_PATIENT_ID = "p-laura";
 
@@ -165,5 +165,19 @@ export function createSeedData(now: Date): DemoData {
     const day = resolveDate(entry.when, now);
     return day === null ? [] : [toAppointment(entry, day, index)];
   });
-  return { doctors: DOCTORS, patients: PATIENTS, appointments };
+  return { doctors: DOCTORS, patients: PATIENTS, appointments, seededAt: toLocalDateTime(now) };
+}
+
+// Seed timestamps all fall on earlier days, while anything made in the app is
+// stamped at or after seededAt. Both are minute-precision, so ">=" keeps a
+// booking made in the same minute as seeding counted as new.
+
+/** Booked by a patient in this browser, not part of the sample data. */
+export function isNewBooking(appointment: Appointment, seededAt: string): boolean {
+  return appointment.createdAt >= seededAt;
+}
+
+/** Completed by a doctor in this browser, not part of the sample data. */
+export function isNewOutcome(appointment: CompletedAppointment, seededAt: string): boolean {
+  return appointment.outcome.completedAt >= seededAt;
 }

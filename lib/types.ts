@@ -48,6 +48,8 @@ export type DemoData = {
   doctors: Doctor[];
   patients: Patient[];
   appointments: Appointment[];
+  /** When this copy of the demo data was generated ("YYYY-MM-DDTHH:mm"). */
+  seededAt: string;
 };
 
 export type Session =

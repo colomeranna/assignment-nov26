@@ -6,8 +6,9 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { Avatar, EmptyState, SectionTitle, card } from "@/components/ui";
+import { Avatar, EmptyState, NewTag, SectionTitle, card } from "@/components/ui";
 import { dateParts, formatDay, toLocalDate } from "@/lib/dates";
+import { isNewBooking } from "@/lib/seed";
 import { useDemo } from "@/lib/store";
 import type { Appointment, DemoData, Doctor, Patient } from "@/lib/types";
 
@@ -40,9 +41,9 @@ function CountTile({ icon, label, count }: TileProps) {
   );
 }
 
-type RowProps = { appointment: Appointment; patient: Patient | undefined; showDate: boolean };
+type RowProps = { appointment: Appointment; patient: Patient | undefined; showDate: boolean; isNew: boolean };
 
-function AppointmentRow({ appointment, patient, showDate }: RowProps) {
+function AppointmentRow({ appointment, patient, showDate, isNew }: RowProps) {
   const { day, month } = dateParts(appointment.date);
   const name = patient?.name ?? "Unknown patient";
   return (
@@ -61,7 +62,10 @@ function AppointmentRow({ appointment, patient, showDate }: RowProps) {
         </span>
         <Avatar name={name} size="sm" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-medium text-slate-900">{name}</span>
+          <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="max-w-full truncate text-sm font-medium text-slate-900">{name}</span>
+            {isNew && <NewTag>New booking</NewTag>}
+          </span>
           {appointment.reason && <span className="block truncate text-sm text-slate-500">{appointment.reason}</span>}
         </span>
         <StatusBadge status={appointment.status} />
@@ -115,7 +119,7 @@ function Dashboard({ data, doctor }: DashboardProps) {
         ) : (
           <ul className={listCard}>
             {todays.map((a) => (
-              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
+              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} isNew={isNewBooking(a, data.seededAt)} />
             ))}
           </ul>
         )}
@@ -135,7 +139,7 @@ function Dashboard({ data, doctor }: DashboardProps) {
                 </h3>
                 <ul className="divide-y divide-slate-100">
                   {group.appointments.map((a) => (
-                    <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
+                    <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} isNew={isNewBooking(a, data.seededAt)} />
                   ))}
                 </ul>
               </div>
@@ -151,7 +155,7 @@ function Dashboard({ data, doctor }: DashboardProps) {
         ) : (
           <ul className={listCard}>
             {completed.map((a) => (
-              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate />
+              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate isNew={isNewBooking(a, data.seededAt)} />
             ))}
           </ul>
         )}

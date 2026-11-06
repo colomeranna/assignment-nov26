@@ -82,7 +82,9 @@ function parseDemoData(v: unknown): DemoData | null {
   const patients = parseList(v.patients, parsePatient);
   const appointments = parseList(v.appointments, parseAppointment);
   if (doctors === null || patients === null || appointments === null) return null;
-  return { doctors, patients, appointments };
+  // Data saved before seededAt existed is treated as unreadable and reseeded.
+  if (!isString(v.seededAt)) return null;
+  return { doctors, patients, appointments, seededAt: v.seededAt };
 }
 
 function parseSession(v: unknown): Session | null {

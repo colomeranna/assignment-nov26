@@ -73,16 +73,20 @@ export function Header() {
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 sm:px-6">
-        <Link href="/" className={`flex items-center gap-2.5 rounded-lg text-base font-semibold text-slate-900 ${focusRing}`}>
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 sm:justify-between sm:gap-x-4 sm:px-6">
+        <Link
+          href="/"
+          aria-label="Clinic Portal"
+          className={`flex shrink-0 items-center gap-2.5 rounded-lg text-base font-semibold text-slate-900 ${focusRing}`}
+        >
           <Logo />
-          Clinic Portal
+          <span className="hidden sm:inline">Clinic Portal</span>
         </Link>
 
-        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-none sm:gap-x-2">
           {current !== undefined && (
             <>
-              <div className="flex min-w-0 items-center gap-2.5 pr-1">
+              <div className="hidden min-w-0 items-center gap-2.5 pr-1 sm:flex">
                 <Avatar name={current.name} size="sm" />
                 <div className="min-w-0 leading-tight">
                   <p className="truncate text-sm font-medium text-slate-900">{current.name}</p>
@@ -96,7 +100,7 @@ export function Header() {
                 id="role-switcher"
                 value={current.key}
                 onChange={(e) => switchTo(e.target.value)}
-                className="w-full min-w-0 sm:w-64"
+                className="min-w-0 flex-1 basis-0 sm:w-64 sm:flex-none sm:basis-auto"
               >
                 {identities.map((i) => (
                   <option key={i.key} value={i.key}>
@@ -104,16 +108,22 @@ export function Header() {
                   </option>
                 ))}
               </Select>
-              <button type="button" onClick={handleSignOut} className={quietButton}>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                aria-label="Sign out"
+                title="Sign out"
+                className={quietButton}
+              >
                 <LogOut aria-hidden className="size-4" />
-                Sign out
+                <span className="hidden sm:inline">Sign out</span>
               </button>
             </>
           )}
           {demo.kind === "ready" && demo.session === null && (
             <span className="px-2.5 text-sm text-slate-500">Not signed in</span>
           )}
-          <ResetDemoButton />
+          <ResetDemoButton compact />
         </div>
       </div>
       <div className="border-t border-amber-100 bg-amber-50/70 px-4 py-1 text-center text-xs text-amber-800">
