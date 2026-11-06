@@ -47,7 +47,9 @@ function MyAppointments() {
   const findDoctor = (id: string) => doctors.find((d) => d.id === id);
   const mine = appointments.filter((a) => a.patientId === session.patientId);
   const upcoming = mine.filter((a) => a.status === "booked").sort(byDateTime);
-  const completed = mine.filter((a) => a.status === "completed").sort(byDateTime).reverse();
+  const completed = mine
+    .flatMap((a) => (a.status === "completed" ? [a] : []))
+    .sort((a, b) => b.outcome.completedAt.localeCompare(a.outcome.completedAt));
   const justBooked = mine.find((a) => a.id === bookedId);
 
   return (

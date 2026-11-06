@@ -107,35 +107,72 @@ function notifyChange(): void {
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
 
-function write(key: string, value: unknown): void {
-  localStorage.setItem(key, JSON.stringify(value));
-  notifyChange();
+// When localStorage throws (blocked, private mode, quota), the demo keeps
+// running on this in-memory copy until the page is reloaded.
+let memory: { data: DemoData; session: Session | null } | null = null;
+
+function switchToMemory(): { data: DemoData; session: Session | null } {
+  memory ??= { data: createSeedData(new Date()), session: null };
+  return memory;
 }
 
 let dataCache: { raw: string; data: DemoData } | null = null;
 
 function readData(): DemoData {
-  const raw = localStorage.getItem(DATA_KEY);
-  if (raw !== null && dataCache?.raw === raw) return dataCache.data;
-  const data = raw === null ? null : parseDemoData(parseJson(raw));
-  if (raw === null || data === null) {
+  if (memory !== null) return memory.data;
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (raw !== null && dataCache?.raw === raw) return dataCache.data;
+    const data = raw === null ? null : parseDemoData(parseJson(raw));
+    if (raw !== null && data !== null) {
+      dataCache = { raw, data };
+      return data;
+    }
     // Missing or unreadable: start the demo fresh.
     const seeded = createSeedData(new Date());
-    localStorage.setItem(DATA_KEY, JSON.stringify(seeded));
-    return readData();
+    const seededRaw = JSON.stringify(seeded);
+    localStorage.setItem(DATA_KEY, seededRaw);
+    dataCache = { raw: seededRaw, data: seeded };
+    return seeded;
+  } catch {
+    return switchToMemory().data;
   }
-  dataCache = { raw, data };
-  return data;
+}
+
+function writeData(data: DemoData): void {
+  try {
+    if (memory !== null) memory.data = data;
+    else localStorage.setItem(DATA_KEY, JSON.stringify(data));
+  } catch {
+    switchToMemory().data = data;
+  }
+  notifyChange();
 }
 
 let sessionCache: { raw: string | null; session: Session | null } | null = null;
 
 function readSession(): Session | null {
-  const raw = localStorage.getItem(SESSION_KEY);
-  if (sessionCache?.raw === raw) return sessionCache.session;
-  const session = raw === null ? null : parseSession(parseJson(raw));
-  sessionCache = { raw, session };
-  return session;
+  if (memory !== null) return memory.session;
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (sessionCache?.raw === raw) return sessionCache.session;
+    const session = raw === null ? null : parseSession(parseJson(raw));
+    sessionCache = { raw, session };
+    return session;
+  } catch {
+    return switchToMemory().session;
+  }
+}
+
+function writeSession(session: Session | null): void {
+  try {
+    if (memory !== null) memory.session = session;
+    else if (session === null) localStorage.removeItem(SESSION_KEY);
+    else localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  } catch {
+    switchToMemory().session = session;
+  }
+  notifyChange();
 }
 
 function subscribe(onChange: () => void): () => void {
@@ -163,19 +200,23 @@ export function useDemo(): DemoState {
   return { kind: "ready", data, session };
 }
 
+/** True once storage has failed and changes only live in memory. */
+export function useIsInMemory(): boolean {
+  return useSyncExternalStore(subscribe, () => memory !== null, () => false);
+}
+
 // ---- Actions
 
 export function setSession(session: Session): void {
-  write(SESSION_KEY, session);
+  writeSession(session);
 }
 
 export function signOut(): void {
-  localStorage.removeItem(SESSION_KEY);
-  notifyChange();
+  writeSession(null);
 }
 
 export function resetDemoData(): void {
-  write(DATA_KEY, createSeedData(new Date()));
+  writeData(createSeedData(new Date()));
 }
 
 export type BookingRequest = Pick<BookedAppointment, "patientId" | "doctorId" | "date" | "time" | "reason">;
@@ -201,7 +242,7 @@ export function bookAppointment(request: BookingRequest): BookingResult {
     status: "booked",
     createdAt: toLocalDateTime(now),
   };
-  write(DATA_KEY, { ...data, appointments: [...data.appointments, appointment] });
+  writeData({ ...data, appointments: [...data.appointments, appointment] });
   return { kind: "booked", appointment };
 }
 
@@ -227,7 +268,7 @@ export function completeConsultation({ appointmentId, doctorId, outcome }: Compl
     status: "completed",
     outcome: { ...outcome, completedAt: toLocalDateTime(new Date()) },
   };
-  write(DATA_KEY, {
+  writeData({
     ...data,
     appointments: data.appointments.map((a) => (a.id === appointmentId ? appointment : a)),
   });

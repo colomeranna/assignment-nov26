@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Clinic Portal",
-  description: "Clickable prototype of a clinic portal for patients and doctors.",
+  title: "Clinic Portal (prototype)",
+  description: "Clickable prototype of a clinic portal: patients book appointments, doctors complete consultations.",
 };
 
 export default function RootLayout({

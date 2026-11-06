@@ -30,16 +30,23 @@ function AppointmentRow({ appointment, patient, showDate }: RowProps) {
         href={`/doctor/appointments/${encodeURIComponent(appointment.id)}`}
         className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-teal-600"
       >
-        <span className="w-28 shrink-0 font-medium tabular-nums">
-          {showDate && <span className="block text-sm font-normal text-slate-500">{formatDay(appointment.date)}</span>}
+        <span className={`shrink-0 font-medium tabular-nums ${showDate ? "w-full sm:w-28" : "w-12 sm:w-16"}`}>
+          {showDate && (
+            <span className="text-sm font-normal text-slate-500 sm:block">
+              {formatDay(appointment.date)}
+              <span className="sm:hidden"> · </span>
+            </span>
+          )}
           {appointment.time}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-medium">{patient?.name ?? "Unknown patient"}</span>
           {appointment.reason && <span className="block text-sm text-slate-600">{appointment.reason}</span>}
         </span>
-        <StatusBadge status={appointment.status} />
-        <span className="text-sm font-medium text-teal-700">Open record →</span>
+        <span className="flex w-full items-center justify-between gap-3 sm:w-auto">
+          <StatusBadge status={appointment.status} />
+          <span className="text-sm font-medium text-teal-700">Open record →</span>
+        </span>
       </Link>
     </li>
   );

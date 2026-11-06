@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clinic Portal (prototype)
 
-## Getting Started
+A clickable prototype of a clinic portal for patients and doctors, built for a 2-hour product exercise. A patient books an appointment, the doctor sees it on their dashboard, completes the consultation with a diagnosis and prescription, and the patient sees the outcome.
 
-First, run the development server:
+**Live demo:** https://assignment-nov26.vercel.app/
+
+## How to try it
+
+1. Continue as Laura and book an appointment with any doctor.
+2. Use the role switcher in the header to become that doctor, and find the booking in the dashboard.
+3. Open the record and complete the consultation with a diagnosis and prescription.
+4. Switch back to Laura to see the outcome.
+
+Data is saved in this browser only, so each tester has their own copy.
+
+## What's included
+
+- Role sign-in and one-click switching between the patient and three doctors
+- Booking with available, taken and past slots
+- Doctor dashboard: Today / Upcoming / Completed
+- Patient record with consultation history across doctors
+- Consultation outcome: diagnosis and optional prescription
+- Outcome visible to the patient as soon as it's saved
+- Validation on booking and on the consultation form
+- Reset demo data
+
+## Simplifications
+
+- Simulated sign-in with fixed demo users
+- Data lives in `localStorage` per browser; there is no shared backend
+- Seed data is generated relative to the first visit, so there are always appointments today and this week
+- Doctors can complete future appointments, so the whole loop can be tested in one sitting
+- Outcomes can't be edited after saving
+- No cancelling, rescheduling or notifications
+
+## Stack
+
+Next.js (App Router), React, TypeScript and Tailwind CSS, deployed on Vercel.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Domain types, seed data, schedule rules and the storage layer are in `lib/`; pages are in `app/`.

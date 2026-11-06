@@ -1,11 +1,39 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { ResetDemoButton } from "@/components/reset-demo-button";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, useDemo } from "@/lib/store";
 import type { Session } from "@/lib/types";
 import { homePath } from "./header";
+
+const card = "space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm";
+
+function ResetNotice() {
+  const wasReset = useSearchParams().get("reset") === "1";
+  if (!wasReset) return null;
+  return (
+    <p role="status" className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+      Demo data reset.
+    </p>
+  );
+}
+
+function HowToTry() {
+  return (
+    <section className={card}>
+      <h2 className="font-medium">How to try it</h2>
+      <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-700">
+        <li>Continue as Laura and book an appointment with any doctor.</li>
+        <li>Use the role switcher in the header to become that doctor, and find the booking in the dashboard.</li>
+        <li>Open the record and complete the consultation with a diagnosis and prescription.</li>
+        <li>Switch back to Laura to see the outcome.</li>
+      </ol>
+      <p className="text-sm text-slate-500">Data is saved in this browser only, so each tester has their own copy.</p>
+    </section>
+  );
+}
 
 export default function StartPage() {
   const demo = useDemo();
@@ -22,7 +50,11 @@ export default function StartPage() {
   const selectedDoctorId = doctorId || (demo.data.doctors[0]?.id ?? "");
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-8">
+    <div className="mx-auto max-w-md space-y-6 py-4 sm:py-8">
+      <Suspense fallback={null}>
+        <ResetNotice />
+      </Suspense>
+
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Clinic Portal</h1>
         <p className="text-slate-600">
@@ -30,7 +62,7 @@ export default function StartPage() {
         </p>
       </div>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className={card}>
         <h2 className="font-medium">Patient</h2>
         <button
           type="button"
@@ -41,7 +73,7 @@ export default function StartPage() {
         </button>
       </section>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className={card}>
         <h2 className="font-medium">Doctor</h2>
         <select
           aria-label="Doctor"
@@ -64,6 +96,12 @@ export default function StartPage() {
           Continue as doctor
         </button>
       </section>
+
+      <HowToTry />
+
+      <div className="flex justify-center">
+        <ResetDemoButton />
+      </div>
     </div>
   );
 }
