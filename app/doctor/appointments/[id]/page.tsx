@@ -1,30 +1,39 @@
 "use client";
 
+import { ArrowLeft, Check, ClipboardList, SearchX } from "lucide-react";
 import Link from "next/link";
 import { use, useState } from "react";
-import { OutcomeDetails } from "@/components/outcome-details";
+import { OutcomeDetails, PrescriptionText } from "@/components/outcome-details";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
+import {
+  Avatar,
+  Banner,
+  EmptyState,
+  FieldError,
+  Label,
+  SectionTitle,
+  card,
+  focusRing,
+  inputClass,
+  primaryButton,
+} from "@/components/ui";
 import { validateConsultation } from "@/lib/consultation";
 import type { ConsultationErrors, ConsultationForm } from "@/lib/consultation";
 import { ageOn, formatDay, formatLongDate } from "@/lib/dates";
 import { completeConsultation, useDemo } from "@/lib/store";
 import type { Appointment, BookedAppointment, DemoData, Patient } from "@/lib/types";
 
-const card = "space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm";
-const input = "w-full rounded-md border border-slate-300 px-3 py-2";
-
 function BackLink() {
   return (
-    <Link href="/doctor" className="text-sm text-teal-700 underline">
-      ← Back to dashboard
+    <Link
+      href="/doctor"
+      className={`inline-flex items-center gap-1.5 rounded text-sm font-medium text-teal-700 hover:text-teal-800 ${focusRing}`}
+    >
+      <ArrowLeft aria-hidden className="size-4" />
+      Back to dashboard
     </Link>
   );
-}
-
-function FieldError({ message }: { message: string | undefined }) {
-  if (message === undefined) return null;
-  return <p className="text-sm text-red-700">{message}</p>;
 }
 
 type FormProps = { appointment: BookedAppointment; onCompleted: () => void };
@@ -68,50 +77,75 @@ function ConsultationFormCard({ appointment, onCompleted }: FormProps) {
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
-      <div className="space-y-1">
-        <label htmlFor="diagnosis" className="font-medium">
-          Diagnosis <span className="font-normal text-slate-500">(required)</span>
-        </label>
+    <form onSubmit={submit} noValidate className="space-y-5">
+      <div>
+        <Label htmlFor="diagnosis" required>
+          Diagnosis
+        </Label>
         <textarea
           id="diagnosis"
-          rows={3}
+          rows={4}
           value={form.diagnosis}
           onChange={update("diagnosis")}
           aria-invalid={errors.diagnosis !== undefined}
-          className={input}
+          aria-describedby={errors.diagnosis ? "diagnosis-error" : undefined}
+          className={inputClass}
         />
-        <FieldError message={errors.diagnosis} />
+        <FieldError id="diagnosis-error" message={errors.diagnosis} />
       </div>
 
-      <fieldset className="space-y-3 rounded-md border border-slate-200 p-4">
-        <legend className="px-1 font-medium">
+      <fieldset className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+        <legend className="px-1 text-sm font-medium text-slate-700">
           Prescription <span className="font-normal text-slate-500">(optional)</span>
         </legend>
-        <div className="space-y-1">
-          <label htmlFor="medication" className="text-sm">Medication</label>
-          <input id="medication" value={form.medication} onChange={update("medication")} placeholder="e.g. Amoxicillin" aria-invalid={errors.medication !== undefined} className={input} />
-          <FieldError message={errors.medication} />
+        <p className="-mt-1 text-xs text-slate-500">If you add one, medication and dosage are required.</p>
+        <div>
+          <Label htmlFor="medication">Medication</Label>
+          <input
+            id="medication"
+            value={form.medication}
+            onChange={update("medication")}
+            placeholder="e.g. Amoxicillin"
+            aria-invalid={errors.medication !== undefined}
+            aria-describedby={errors.medication ? "medication-error" : undefined}
+            className={inputClass}
+          />
+          <FieldError id="medication-error" message={errors.medication} />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1">
-            <label htmlFor="dosage" className="text-sm">Dosage</label>
-            <input id="dosage" value={form.dosage} onChange={update("dosage")} placeholder="e.g. 500 mg, twice a day" aria-invalid={errors.dosage !== undefined} className={input} />
-            <FieldError message={errors.dosage} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="dosage">Dosage</Label>
+            <input
+              id="dosage"
+              value={form.dosage}
+              onChange={update("dosage")}
+              placeholder="e.g. 500 mg, twice a day"
+              aria-invalid={errors.dosage !== undefined}
+              aria-describedby={errors.dosage ? "dosage-error" : undefined}
+              className={inputClass}
+            />
+            <FieldError id="dosage-error" message={errors.dosage} />
           </div>
-          <div className="space-y-1">
-            <label htmlFor="duration" className="text-sm">Duration</label>
-            <input id="duration" value={form.duration} onChange={update("duration")} placeholder="e.g. 7 days" className={input} />
+          <div>
+            <Label htmlFor="duration">Duration</Label>
+            <input
+              id="duration"
+              value={form.duration}
+              onChange={update("duration")}
+              placeholder="e.g. 7 days"
+              className={inputClass}
+            />
           </div>
         </div>
       </fieldset>
 
       {saveError && (
-        <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+        <Banner tone="error" onDismiss={() => setSaveError(null)}>
           {saveError}
-        </p>
+        </Banner>
       )}
-      <button type="submit" className="w-full rounded-md bg-teal-700 px-4 py-2.5 font-medium text-white hover:bg-teal-800">
+      <button type="submit" className={`${primaryButton} w-full sm:w-auto`}>
+        <Check aria-hidden className="size-4" />
         Complete consultation
       </button>
     </form>
@@ -127,87 +161,107 @@ function PatientRecord({ data, appointment, patient }: RecordProps) {
   const doctor = findDoctor(appointment.doctorId);
 
   const history = data.appointments
-    .flatMap((a) => (a.status === "completed" && a.patientId === appointment.patientId && a.id !== appointment.id ? [a] : []))
+    .flatMap((a) =>
+      a.status === "completed" && a.patientId === appointment.patientId && a.id !== appointment.id ? [a] : [],
+    )
     .sort((a, b) => b.outcome.completedAt.localeCompare(a.outcome.completedAt));
+
+  const details: [string, string][] = [
+    ["Date", formatDay(appointment.date)],
+    ["Time", appointment.time],
+    ["Doctor", doctor ? `${doctor.name} · ${doctor.specialty}` : "Unknown doctor"],
+    ["Reason", appointment.reason || "—"],
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <BackLink />
-        <h1 className="text-2xl font-semibold tracking-tight">Patient record</h1>
-      </div>
+      <BackLink />
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <section className={card}>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">Patient</h2>
-          {patient ? (
-            <div>
-              <p className="text-lg font-medium">{patient.name}</p>
+      <section className={`${card} grid gap-6 p-5 sm:p-6 md:grid-cols-[1fr_1.4fr]`}>
+        <div className="flex items-center gap-4">
+          <Avatar name={patient?.name ?? "?"} size="lg" />
+          <div className="min-w-0">
+            <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">Patient record</p>
+            <h1 className="truncate text-2xl font-semibold tracking-tight text-slate-900">
+              {patient?.name ?? "Unknown patient"}
+            </h1>
+            {patient && (
               <p className="text-sm text-slate-600">
                 Born {formatLongDate(patient.dateOfBirth)} · {ageOn(patient.dateOfBirth, now)} years
               </p>
-            </div>
+            )}
+          </div>
+        </div>
+        <div className="border-t border-slate-100 pt-5 md:border-t-0 md:border-l md:pt-0 md:pl-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <SectionTitle title="This appointment" />
+            <StatusBadge status={appointment.status} />
+          </div>
+          <dl className="grid grid-cols-[5rem_1fr] gap-x-4 gap-y-2 text-sm">
+            {details.map(([label, value]) => (
+              <div key={label} className="contents">
+                <dt className="text-slate-500">{label}</dt>
+                <dd className="font-medium text-slate-900">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_22rem]">
+        <section className={`${card} space-y-4 p-5 sm:p-6`}>
+          <h2 className="text-base font-semibold text-slate-900">Consultation</h2>
+          {justCompleted && (
+            <Banner tone="success">Consultation completed and shared with {patient?.name ?? "the patient"}.</Banner>
+          )}
+          {appointment.status === "booked" ? (
+            <ConsultationFormCard appointment={appointment} onCompleted={() => setJustCompleted(true)} />
           ) : (
-            <p className="text-slate-500">Unknown patient</p>
+            <OutcomeDetails outcome={appointment.outcome} />
           )}
         </section>
 
-        <section className={card}>
-          <div className="flex items-start justify-between gap-3">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-slate-500">This appointment</h2>
-            <StatusBadge status={appointment.status} />
-          </div>
-          <dl className="grid grid-cols-[4.5rem_1fr] gap-1 text-sm">
-            <dt className="text-slate-500">Date</dt>
-            <dd>{formatDay(appointment.date)}</dd>
-            <dt className="text-slate-500">Time</dt>
-            <dd>{appointment.time}</dd>
-            <dt className="text-slate-500">Doctor</dt>
-            <dd>{doctor ? `${doctor.name} (${doctor.specialty})` : "Unknown doctor"}</dd>
-            <dt className="text-slate-500">Reason</dt>
-            <dd>{appointment.reason || "—"}</dd>
-          </dl>
+        <section className="space-y-3">
+          <SectionTitle title="Consultation history" count={history.length} />
+          {history.length === 0 ? (
+            <EmptyState icon={<ClipboardList aria-hidden />} text="No earlier consultations for this patient." />
+          ) : (
+            <ol className={`${card} space-y-0 p-5`}>
+              {history.map((a, index) => {
+                const historyDoctor = findDoctor(a.doctorId);
+                const isLast = index === history.length - 1;
+                return (
+                  <li key={a.id} className="relative pb-6 pl-6 last:pb-0">
+                    {!isLast && <span aria-hidden className="absolute top-3 bottom-0 left-[5px] w-px bg-slate-200" />}
+                    <span aria-hidden className="absolute top-1.5 left-0 size-[11px] rounded-full border-2 border-teal-600 bg-white" />
+                    <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">
+                      {formatDay(a.outcome.completedAt.slice(0, 10))}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      {historyDoctor ? historyDoctor.name : "Unknown doctor"}
+                      {historyDoctor && <span className="font-normal text-slate-500"> · {historyDoctor.specialty}</span>}
+                    </p>
+                    <dl className="mt-2 space-y-1.5 text-sm">
+                      <div>
+                        <dt className="text-xs text-slate-500">Diagnosis</dt>
+                        <dd className="text-slate-800">{a.outcome.diagnosis}</dd>
+                      </div>
+                      {a.outcome.prescription && (
+                        <div>
+                          <dt className="text-xs text-slate-500">Prescription</dt>
+                          <dd>
+                            <PrescriptionText prescription={a.outcome.prescription} />
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </section>
       </div>
-
-      <section className={card}>
-        <h2 className="text-lg font-medium">Consultation</h2>
-        {justCompleted && (
-          <p role="status" className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-green-800">
-            Consultation completed and shared with {patient?.name ?? "the patient"}.
-          </p>
-        )}
-        {appointment.status === "booked" ? (
-          <ConsultationFormCard appointment={appointment} onCompleted={() => setJustCompleted(true)} />
-        ) : (
-          <OutcomeDetails outcome={appointment.outcome} />
-        )}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">
-          Consultation history <span className="text-slate-400">· {history.length}</span>
-        </h2>
-        {history.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-slate-500">
-            No earlier consultations for this patient.
-          </p>
-        ) : (
-          <ul className="space-y-3">
-            {history.map((a) => {
-              const historyDoctor = findDoctor(a.doctorId);
-              return (
-                <li key={a.id} className="space-y-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                  <p className="text-sm font-medium">
-                    {historyDoctor ? `${historyDoctor.name} · ${historyDoctor.specialty}` : "Unknown doctor"}
-                  </p>
-                  <OutcomeDetails outcome={a.outcome} />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
     </div>
   );
 }
@@ -217,7 +271,7 @@ type PageProps = { params: Promise<{ id: string }> };
 export default function AppointmentRecordPage({ params }: PageProps) {
   const { id } = use(params);
   const demo = useDemo();
-  if (demo.kind === "loading") return <p className="text-slate-500">Loading…</p>;
+  if (demo.kind === "loading") return <p className="text-sm text-slate-500">Loading…</p>;
 
   const session = demo.session;
   if (session?.role !== "doctor") return <SignInPrompt role="doctor" />;
@@ -226,9 +280,10 @@ export default function AppointmentRecordPage({ params }: PageProps) {
   const appointment = demo.data.appointments.find((a) => a.id === id && a.doctorId === session.doctorId);
   if (appointment === undefined) {
     return (
-      <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-lg font-medium">Appointment not found</h1>
-        <p className="text-slate-600">This appointment doesn&apos;t exist or isn&apos;t one of yours.</p>
+      <div className={`${card} mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center`}>
+        <SearchX aria-hidden className="size-6 text-slate-400" />
+        <h1 className="text-lg font-semibold text-slate-900">Appointment not found</h1>
+        <p className="text-sm text-slate-600">This appointment doesn&apos;t exist or isn&apos;t one of yours.</p>
         <BackLink />
       </div>
     );

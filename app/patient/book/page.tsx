@@ -1,22 +1,17 @@
 "use client";
 
+import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
-import { formatDay, formatShortDay } from "@/lib/dates";
+import { Avatar, Banner, Label, card, focusRing, inputClass, primaryButton } from "@/components/ui";
+import { dateParts, formatDay } from "@/lib/dates";
 import { getBookableDays, getSlots } from "@/lib/schedule";
 import type { SlotStatus } from "@/lib/schedule";
 import { bookAppointment, useDemo } from "@/lib/store";
 import type { DemoData } from "@/lib/types";
-
-const card = "space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm";
-
-function choiceClass(selected: boolean): string {
-  return selected
-    ? "border-teal-700 bg-teal-50 text-teal-900 ring-1 ring-teal-700"
-    : "border-slate-200 bg-white hover:border-teal-600";
-}
 
 const UNAVAILABLE_LABEL: Record<Exclude<SlotStatus, "available">, string> = {
   taken: "Taken",
@@ -34,6 +29,48 @@ function listMissing(choice: { doctorId: string | null; date: string | null; tim
 function joinWithAnd(items: string[]): string {
   return items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
+
+function StepNumber({ n, done }: { n: number; done: boolean }) {
+  return (
+    <span
+      className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+        done ? "bg-teal-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-300"
+      }`}
+    >
+      {done ? <Check aria-hidden className="size-4" strokeWidth={3} /> : n}
+    </span>
+  );
+}
+
+function Stepper({ steps }: { steps: { label: string; done: boolean }[] }) {
+  return (
+    <ol className="flex items-center gap-2 sm:gap-3">
+      {steps.map((step, index) => (
+        <li key={step.label} className="flex flex-1 items-center gap-2 sm:gap-3">
+          <StepNumber n={index + 1} done={step.done} />
+          <span className={`text-sm font-medium ${step.done ? "text-slate-900" : "text-slate-500"}`}>{step.label}</span>
+          {index < steps.length - 1 && <span aria-hidden className="h-px flex-1 bg-slate-200" />}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+type StepCardProps = { n: number; title: string; done: boolean; children: ReactNode };
+
+function StepCard({ n, title, done, children }: StepCardProps) {
+  return (
+    <section className={`${card} space-y-4 p-5`}>
+      <h2 className="flex items-center gap-3 text-base font-semibold text-slate-900">
+        <StepNumber n={n} done={done} />
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+const selectedRing = "border-teal-600 bg-teal-50/60 ring-2 ring-teal-600";
 
 type FormProps = { data: DemoData; patientId: string };
 
@@ -92,135 +129,165 @@ function BookingForm({ data, patientId }: FormProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <Link href="/patient" className="text-sm text-teal-700 underline">
-          ← My appointments
+      <div className="space-y-2">
+        <Link href="/patient" className={`inline-flex items-center gap-1.5 rounded text-sm font-medium text-teal-700 hover:text-teal-800 ${focusRing}`}>
+          <ArrowLeft aria-hidden className="size-4" />
+          My appointments
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Book an appointment</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Book an appointment</h1>
       </div>
 
-      <section className={card}>
-        <h2 className="font-medium">1. Choose a doctor</h2>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {data.doctors.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              aria-pressed={d.id === doctorId}
-              onClick={() => chooseDoctor(d.id)}
-              className={`rounded-lg border p-3 text-left ${choiceClass(d.id === doctorId)}`}
-            >
-              <span className="block font-medium">{d.name}</span>
-              <span className="block text-sm text-slate-600">{d.specialty}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+      <Stepper
+        steps={[
+          { label: "Doctor", done: doctorId !== null },
+          { label: "Day", done: date !== null },
+          { label: "Time", done: time !== null },
+        ]}
+      />
 
-      <section className={card}>
-        <h2 className="font-medium">2. Choose a day</h2>
-        <div className="flex flex-wrap gap-2">
-          {days.map((day) => (
-            <button
-              key={day}
-              type="button"
-              aria-pressed={day === date}
-              onClick={() => chooseDay(day)}
-              className={`rounded-md border px-3 py-2 text-sm ${choiceClass(day === date)}`}
-            >
-              {formatShortDay(day)}
-            </button>
-          ))}
-        </div>
-      </section>
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_20rem]">
+        <div className="space-y-6">
+          <StepCard n={1} title="Choose a doctor" done={doctorId !== null}>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {data.doctors.map((d) => (
+                <button
+                  key={d.id}
+                  type="button"
+                  aria-pressed={d.id === doctorId}
+                  onClick={() => chooseDoctor(d.id)}
+                  className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors ${focusRing} ${
+                    d.id === doctorId ? selectedRing : "border-slate-200 bg-white hover:border-teal-400 hover:bg-slate-50"
+                  }`}
+                >
+                  <Avatar name={d.name} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-slate-900">{d.name}</span>
+                    <span className="block truncate text-xs text-slate-500">{d.specialty}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </StepCard>
 
-      <section className={card}>
-        <h2 className="font-medium">3. Choose a time</h2>
-        {slots.length === 0 ? (
-          <p className="text-sm text-slate-500">Choose a doctor and a day to see available times.</p>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {slots.map((slot) =>
-              slot.status === "available" ? (
-                <button
-                  key={slot.time}
-                  type="button"
-                  aria-pressed={slot.time === time}
-                  onClick={() => {
-                    setTime(slot.time);
-                    setError(null);
-                  }}
-                  className={`rounded-md border px-2 py-2 text-sm ${choiceClass(slot.time === time)}`}
-                >
-                  {slot.time}
-                </button>
-              ) : (
-                <button
-                  key={slot.time}
-                  type="button"
-                  disabled
-                  className="cursor-not-allowed rounded-md border border-slate-200 bg-slate-100 px-2 py-1 text-sm text-slate-400"
-                >
-                  <span className="block line-through">{slot.time}</span>
-                  <span className="block text-xs">{UNAVAILABLE_LABEL[slot.status]}</span>
-                </button>
-              ),
+          <StepCard n={2} title="Choose a day" done={date !== null}>
+            <div className="flex flex-wrap gap-2">
+              {days.map((day) => {
+                const { weekday, day: dayNumber, month } = dateParts(day);
+                const isSelected = day === date;
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => chooseDay(day)}
+                    className={`inline-flex items-baseline gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors ${focusRing} ${
+                      isSelected
+                        ? "border-teal-600 bg-teal-600 text-white"
+                        : "border-slate-200 bg-white text-slate-700 hover:border-teal-400"
+                    }`}
+                  >
+                    <span className={isSelected ? "text-teal-100" : "text-slate-500"}>{weekday}</span>
+                    <span className="font-medium">
+                      {dayNumber} {month}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </StepCard>
+
+          <StepCard n={3} title="Choose a time" done={time !== null}>
+            {slots.length === 0 ? (
+              <p className="text-sm text-slate-500">Choose a doctor and a day to see available times.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                {slots.map((slot) =>
+                  slot.status === "available" ? (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      aria-pressed={slot.time === time}
+                      onClick={() => {
+                        setTime(slot.time);
+                        setError(null);
+                      }}
+                      className={`h-12 rounded-lg border text-sm font-medium tabular-nums transition-colors ${focusRing} ${
+                        slot.time === time
+                          ? "border-teal-600 bg-teal-600 text-white shadow-sm"
+                          : "border-slate-200 bg-white text-slate-800 hover:border-teal-400 hover:bg-teal-50/50"
+                      }`}
+                    >
+                      {slot.time}
+                    </button>
+                  ) : (
+                    <button
+                      key={slot.time}
+                      type="button"
+                      disabled
+                      className="h-12 cursor-not-allowed rounded-lg border border-slate-100 bg-slate-100 text-sm text-slate-400"
+                    >
+                      <span className="block leading-tight tabular-nums line-through">{slot.time}</span>
+                      <span className="block text-[11px] leading-tight">{UNAVAILABLE_LABEL[slot.status]}</span>
+                    </button>
+                  ),
+                )}
+              </div>
             )}
-          </div>
-        )}
-      </section>
+          </StepCard>
 
-      <section className={card}>
-        <label htmlFor="reason" className="font-medium">
-          Reason for visit <span className="font-normal text-slate-500">(optional)</span>
-        </label>
-        <input
-          id="reason"
-          type="text"
-          maxLength={120}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="e.g. Follow-up on blood test"
-          className="w-full rounded-md border border-slate-300 px-3 py-2"
-        />
-      </section>
+          <section className={`${card} p-5`}>
+            <Label htmlFor="reason">
+              Reason for visit <span className="font-normal text-slate-500">(optional)</span>
+            </Label>
+            <input
+              id="reason"
+              type="text"
+              maxLength={120}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. Follow-up on blood test"
+              aria-describedby="reason-help"
+              className={inputClass}
+            />
+            <p id="reason-help" className="mt-1.5 text-xs text-slate-500">
+              A few words help the doctor prepare.
+            </p>
+          </section>
+        </div>
 
-      <section className={card}>
-        <h2 className="font-medium">Summary</h2>
-        <dl className="grid grid-cols-[5rem_1fr] gap-1 text-sm">
-          <dt className="text-slate-500">Doctor</dt>
-          <dd>{doctor ? `${doctor.name} (${doctor.specialty})` : "—"}</dd>
-          <dt className="text-slate-500">Day</dt>
-          <dd>{date ? formatDay(date) : "—"}</dd>
-          <dt className="text-slate-500">Time</dt>
-          <dd>{time ?? "—"}</dd>
-          <dt className="text-slate-500">Reason</dt>
-          <dd>{reason.trim() || "—"}</dd>
-        </dl>
-        {error && (
-          <p role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {error}
-          </p>
-        )}
-        {missing.length > 0 && (
-          <p className="text-sm text-slate-600">Choose {joinWithAnd(missing)} to continue.</p>
-        )}
-        <button
-          type="button"
-          disabled={missing.length > 0}
-          onClick={confirm}
-          className="w-full rounded-md bg-teal-700 px-4 py-2.5 font-medium text-white hover:bg-teal-800 disabled:cursor-not-allowed disabled:bg-slate-300"
-        >
-          Confirm booking
-        </button>
-      </section>
+        <aside className={`${card} space-y-4 p-5 lg:sticky lg:top-6`}>
+          <h2 className="text-base font-semibold text-slate-900">Summary</h2>
+          <dl className="space-y-3 text-sm">
+            {[
+              ["Doctor", doctor ? `${doctor.name} · ${doctor.specialty}` : "—"],
+              ["Day", date ? formatDay(date) : "—"],
+              ["Time", time ?? "—"],
+              ["Reason", reason.trim() || "—"],
+            ].map(([label, value]) => (
+              <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+                <dt className="text-slate-500">{label}</dt>
+                <dd className="text-right font-medium text-slate-900">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          {error && (
+            <Banner tone="error" onDismiss={() => setError(null)}>
+              {error}
+            </Banner>
+          )}
+          {missing.length > 0 && <p className="text-sm text-slate-500">Choose {joinWithAnd(missing)} to continue.</p>}
+          <button type="button" disabled={missing.length > 0} onClick={confirm} className={`${primaryButton} w-full`}>
+            Confirm booking
+          </button>
+        </aside>
+      </div>
     </div>
   );
 }
 
 export default function BookPage() {
   const demo = useDemo();
-  if (demo.kind === "loading") return <p className="text-slate-500">Loading…</p>;
+  if (demo.kind === "loading") return <p className="text-sm text-slate-500">Loading…</p>;
   const session = demo.session;
   if (session?.role !== "patient") return <SignInPrompt role="patient" />;
   return <BookingForm data={demo.data} patientId={session.patientId} />;

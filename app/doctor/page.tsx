@@ -1,10 +1,13 @@
 "use client";
 
+import { CalendarCheck, CalendarDays, CalendarX, ChevronRight, ClipboardList, Inbox } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { formatDay, toLocalDate } from "@/lib/dates";
+import { Avatar, EmptyState, SectionTitle, card } from "@/components/ui";
+import { dateParts, formatDay, toLocalDate } from "@/lib/dates";
 import { useDemo } from "@/lib/store";
 import type { Appointment, DemoData, Doctor, Patient } from "@/lib/types";
 
@@ -21,53 +24,55 @@ function groupByDay(appointments: Appointment[]): { date: string; appointments: 
   return groups;
 }
 
+type TileProps = { icon: ReactNode; label: string; count: number };
+
+function CountTile({ icon, label, count }: TileProps) {
+  return (
+    <div className={`${card} flex items-center gap-3 p-4`}>
+      <span className="hidden size-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600 sm:inline-flex">
+        {icon}
+      </span>
+      <div>
+        <p className="text-2xl leading-none font-semibold text-slate-900 tabular-nums">{count}</p>
+        <p className="mt-1 text-xs font-medium tracking-wide text-slate-500 uppercase">{label}</p>
+      </div>
+    </div>
+  );
+}
+
 type RowProps = { appointment: Appointment; patient: Patient | undefined; showDate: boolean };
 
 function AppointmentRow({ appointment, patient, showDate }: RowProps) {
+  const { day, month } = dateParts(appointment.date);
+  const name = patient?.name ?? "Unknown patient";
   return (
     <li>
       <Link
         href={`/doctor/appointments/${encodeURIComponent(appointment.id)}`}
-        className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm hover:border-teal-600"
+        className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:bg-teal-50/60 focus-visible:outline-none sm:gap-4"
       >
-        <span className={`shrink-0 font-medium tabular-nums ${showDate ? "w-full sm:w-28" : "w-12 sm:w-16"}`}>
+        <span className="w-12 shrink-0 text-sm font-semibold text-slate-900 tabular-nums">
           {showDate && (
-            <span className="text-sm font-normal text-slate-500 sm:block">
-              {formatDay(appointment.date)}
-              <span className="sm:hidden"> · </span>
+            <span className="block text-xs font-normal text-slate-500">
+              {day} {month}
             </span>
           )}
           {appointment.time}
         </span>
+        <Avatar name={name} size="sm" />
         <span className="min-w-0 flex-1">
-          <span className="block font-medium">{patient?.name ?? "Unknown patient"}</span>
-          {appointment.reason && <span className="block text-sm text-slate-600">{appointment.reason}</span>}
+          <span className="block truncate text-sm font-medium text-slate-900">{name}</span>
+          {appointment.reason && <span className="block truncate text-sm text-slate-500">{appointment.reason}</span>}
         </span>
-        <span className="flex w-full items-center justify-between gap-3 sm:w-auto">
-          <StatusBadge status={appointment.status} />
-          <span className="text-sm font-medium text-teal-700">Open record →</span>
-        </span>
+        <StatusBadge status={appointment.status} />
+        <span className="hidden text-sm font-medium text-teal-700 md:inline">Open record</span>
+        <ChevronRight aria-hidden className="size-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5" />
       </Link>
     </li>
   );
 }
 
-type SectionProps = { title: string; count: number; empty: string; children: React.ReactNode };
-
-function Section({ title, count, empty, children }: SectionProps) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-medium">
-        {title} <span className="text-slate-400">· {count}</span>
-      </h2>
-      {count === 0 ? (
-        <p className="rounded-lg border border-dashed border-slate-300 p-4 text-slate-500">{empty}</p>
-      ) : (
-        children
-      )}
-    </section>
-  );
-}
+const listCard = `${card} divide-y divide-slate-100 overflow-hidden`;
 
 type DashboardProps = { data: DemoData; doctor: Doctor };
 
@@ -86,54 +91,78 @@ function Dashboard({ data, doctor }: DashboardProps) {
     .sort((a, b) => b.outcome.completedAt.localeCompare(a.outcome.completedAt));
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">{doctor.name}</h1>
-        <p className="text-slate-600">
-          {doctor.specialty} · {formatDay(today)}
-        </p>
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Avatar name={doctor.name} size="lg" />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{doctor.name}</h1>
+          <p className="text-sm text-slate-500">
+            {doctor.specialty} · {formatDay(today)}
+          </p>
+        </div>
       </div>
 
-      <Section title="Today" count={todays.length} empty="No appointments today.">
-        <ul className="space-y-2">
-          {todays.map((a) => (
-            <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
-          ))}
-        </ul>
-      </Section>
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <CountTile icon={<CalendarDays aria-hidden className="size-5" />} label="Today" count={todays.length} />
+        <CountTile icon={<CalendarCheck aria-hidden className="size-5" />} label="Upcoming" count={otherBooked.length} />
+        <CountTile icon={<ClipboardList aria-hidden className="size-5" />} label="Completed" count={completed.length} />
+      </div>
 
-      <Section title="Upcoming" count={otherBooked.length} empty="No upcoming appointments.">
-        <div className="space-y-4">
-          {groupByDay(otherBooked).map((group) => (
-            <div key={group.date} className="space-y-2">
-              <h3 className="text-sm font-medium text-slate-500">
-                {formatDay(group.date)}
-                {group.date < today && " · past, not completed"}
-              </h3>
-              <ul className="space-y-2">
-                {group.appointments.map((a) => (
-                  <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <section className="space-y-3">
+        <SectionTitle title="Today" count={todays.length} />
+        {todays.length === 0 ? (
+          <EmptyState icon={<CalendarX aria-hidden />} text="No appointments today." />
+        ) : (
+          <ul className={listCard}>
+            {todays.map((a) => (
+              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
+            ))}
+          </ul>
+        )}
+      </section>
 
-      <Section title="Completed" count={completed.length} empty="No completed consultations yet.">
-        <ul className="space-y-2">
-          {completed.map((a) => (
-            <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate />
-          ))}
-        </ul>
-      </Section>
+      <section className="space-y-3">
+        <SectionTitle title="Upcoming" count={otherBooked.length} />
+        {otherBooked.length === 0 ? (
+          <EmptyState icon={<Inbox aria-hidden />} text="No upcoming appointments." />
+        ) : (
+          <div className="space-y-4">
+            {groupByDay(otherBooked).map((group) => (
+              <div key={group.date} className={`${card} overflow-hidden`}>
+                <h3 className="border-b border-slate-100 bg-slate-50/80 px-4 py-2 text-xs font-medium text-slate-600">
+                  {formatDay(group.date)}
+                  {group.date < today && " · past, not completed"}
+                </h3>
+                <ul className="divide-y divide-slate-100">
+                  {group.appointments.map((a) => (
+                    <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate={false} />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <SectionTitle title="Completed" count={completed.length} />
+        {completed.length === 0 ? (
+          <EmptyState icon={<ClipboardList aria-hidden />} text="No completed consultations yet." />
+        ) : (
+          <ul className={listCard}>
+            {completed.map((a) => (
+              <AppointmentRow key={a.id} appointment={a} patient={findPatient(a.patientId)} showDate />
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
 
 export default function DoctorPage() {
   const demo = useDemo();
-  if (demo.kind === "loading") return <p className="text-slate-500">Loading…</p>;
+  if (demo.kind === "loading") return <p className="text-sm text-slate-500">Loading…</p>;
 
   const session = demo.session;
   if (session?.role !== "doctor") return <SignInPrompt role="doctor" />;

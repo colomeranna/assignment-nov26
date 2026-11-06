@@ -59,3 +59,12 @@ export function ageOn(dateOfBirth: string, today: Date): number {
 export function formatLongDate(date: string): string {
   return parseLocalDate(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
+
+export function dateParts(date: string): { weekday: string; day: number; month: string } {
+  const d = parseLocalDate(date);
+  return {
+    weekday: d.toLocaleDateString("en-GB", { weekday: "short" }),
+    day: d.getDate(),
+    month: d.toLocaleDateString("en-GB", { month: "short" }),
+  };
+}

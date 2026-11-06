@@ -1,36 +1,63 @@
 "use client";
 
+import { ArrowRight, Stethoscope, UserRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import type { ReactNode } from "react";
 import { ResetDemoButton } from "@/components/reset-demo-button";
+import { Banner, Select, card, primaryButton, secondaryButton } from "@/components/ui";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, useDemo } from "@/lib/store";
 import type { Session } from "@/lib/types";
 import { homePath } from "./header";
 
-const card = "space-y-3 rounded-lg border border-slate-200 bg-white p-5 shadow-sm";
+const STEPS = [
+  "Continue as Laura and book an appointment with any doctor.",
+  "Use the role switcher in the header to become that doctor, and find the booking in the dashboard.",
+  "Open the record and complete the consultation with a diagnosis and prescription.",
+  "Switch back to Laura to see the outcome.",
+] as const;
 
 function ResetNotice() {
   const wasReset = useSearchParams().get("reset") === "1";
   if (!wasReset) return null;
+  return <Banner tone="success">Demo data reset.</Banner>;
+}
+
+type RoleCardProps = { icon: ReactNode; title: string; description: string; children: ReactNode };
+
+function RoleCard({ icon, title, description, children }: RoleCardProps) {
   return (
-    <p role="status" className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-800">
-      Demo data reset.
-    </p>
+    <section className={`${card} flex flex-col gap-4 p-6`}>
+      <span className="inline-flex size-11 items-center justify-center rounded-xl bg-teal-50 text-teal-600 ring-1 ring-teal-100">
+        {icon}
+      </span>
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+        <p className="text-sm text-slate-600">{description}</p>
+      </div>
+      <div className="mt-auto space-y-3">{children}</div>
+    </section>
   );
 }
 
 function HowToTry() {
   return (
-    <section className={card}>
-      <h2 className="font-medium">How to try it</h2>
-      <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-700">
-        <li>Continue as Laura and book an appointment with any doctor.</li>
-        <li>Use the role switcher in the header to become that doctor, and find the booking in the dashboard.</li>
-        <li>Open the record and complete the consultation with a diagnosis and prescription.</li>
-        <li>Switch back to Laura to see the outcome.</li>
+    <section className={`${card} space-y-4 p-6`}>
+      <h2 className="text-base font-semibold text-slate-900">How to try it</h2>
+      <ol className="space-y-3">
+        {STEPS.map((step, index) => (
+          <li key={step} className="flex gap-3 text-sm text-slate-700">
+            <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
+              {index + 1}
+            </span>
+            <span className="pt-0.5">{step}</span>
+          </li>
+        ))}
       </ol>
-      <p className="text-sm text-slate-500">Data is saved in this browser only, so each tester has their own copy.</p>
+      <p className="border-t border-slate-100 pt-3 text-sm text-slate-500">
+        Data is saved in this browser only, so each tester has their own copy.
+      </p>
     </section>
   );
 }
@@ -45,57 +72,63 @@ export default function StartPage() {
     router.push(homePath(session));
   }
 
-  if (demo.kind === "loading") return <p className="text-slate-500">Loading…</p>;
+  if (demo.kind === "loading") return <p className="text-sm text-slate-500">Loading…</p>;
 
   const selectedDoctorId = doctorId || (demo.data.doctors[0]?.id ?? "");
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-4 sm:py-8">
+    <div className="mx-auto max-w-3xl space-y-6 sm:py-4">
       <Suspense fallback={null}>
         <ResetNotice />
       </Suspense>
 
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">Clinic Portal</h1>
-        <p className="text-slate-600">
-          A clickable prototype with simulated sign-in: pick who you want to be.
-        </p>
+      <div className="space-y-2 py-2 text-center sm:py-4">
+        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Clinic Portal</h1>
+        <p className="text-base text-slate-600">A clickable prototype with simulated sign-in: pick who you want to be.</p>
       </div>
 
-      <section className={card}>
-        <h2 className="font-medium">Patient</h2>
-        <button
-          type="button"
-          onClick={() => continueAs({ role: "patient", patientId: DEMO_PATIENT_ID })}
-          className="w-full rounded-md bg-teal-700 px-4 py-2.5 font-medium text-white hover:bg-teal-800"
+      <div className="grid gap-6 sm:grid-cols-2">
+        <RoleCard
+          icon={<UserRound aria-hidden className="size-5" />}
+          title="Patient"
+          description="Book appointments and see your consultation outcomes."
         >
-          Continue as patient (Laura Martín)
-        </button>
-      </section>
+          <button
+            type="button"
+            onClick={() => continueAs({ role: "patient", patientId: DEMO_PATIENT_ID })}
+            className={`${primaryButton} w-full`}
+          >
+            Continue as patient (Laura Martín)
+            <ArrowRight aria-hidden className="size-4" />
+          </button>
+        </RoleCard>
 
-      <section className={card}>
-        <h2 className="font-medium">Doctor</h2>
-        <select
-          aria-label="Doctor"
-          value={selectedDoctorId}
-          onChange={(e) => setDoctorId(e.target.value)}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2"
+        <RoleCard
+          icon={<Stethoscope aria-hidden className="size-5" />}
+          title="Doctor"
+          description="See your schedule and complete consultations."
         >
-          {demo.data.doctors.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name} — {d.specialty}
-            </option>
-          ))}
-        </select>
-        <button
-          type="button"
-          disabled={selectedDoctorId === ""}
-          onClick={() => continueAs({ role: "doctor", doctorId: selectedDoctorId })}
-          className="w-full rounded-md border border-teal-700 px-4 py-2.5 font-medium text-teal-700 hover:bg-teal-50"
-        >
-          Continue as doctor
-        </button>
-      </section>
+          <label htmlFor="doctor-picker" className="sr-only">
+            Doctor
+          </label>
+          <Select id="doctor-picker" value={selectedDoctorId} onChange={(e) => setDoctorId(e.target.value)}>
+            {demo.data.doctors.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} · {d.specialty}
+              </option>
+            ))}
+          </Select>
+          <button
+            type="button"
+            disabled={selectedDoctorId === ""}
+            onClick={() => continueAs({ role: "doctor", doctorId: selectedDoctorId })}
+            className={`${secondaryButton} w-full`}
+          >
+            Continue as doctor
+            <ArrowRight aria-hidden className="size-4" />
+          </button>
+        </RoleCard>
+      </div>
 
       <HowToTry />
 

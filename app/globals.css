@@ -4,3 +4,8 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
+
+/* The prototype is light-only, whatever the OS setting. */
+html {
+  color-scheme: light;
+}

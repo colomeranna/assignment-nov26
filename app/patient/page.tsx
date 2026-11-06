@@ -1,35 +1,57 @@
 "use client";
 
+import { CalendarX, Clock, ClipboardList, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { OutcomeDetails } from "@/components/outcome-details";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { formatDay } from "@/lib/dates";
+import { Banner, EmptyState, SectionTitle, card, primaryButton } from "@/components/ui";
+import { dateParts, formatDay } from "@/lib/dates";
 import { useDemo } from "@/lib/store";
 import type { Appointment, Doctor } from "@/lib/types";
 
 const byDateTime = (a: Appointment, b: Appointment) =>
   `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`);
 
+function DateBlock({ date }: { date: string }) {
+  const { day, month } = dateParts(date);
+  return (
+    <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-xl bg-teal-50 text-teal-700 ring-1 ring-teal-100">
+      <span className="text-xl leading-none font-semibold tabular-nums">{day}</span>
+      <span className="mt-0.5 text-xs font-medium uppercase">{month}</span>
+    </div>
+  );
+}
+
 type CardProps = { appointment: Appointment; doctor: Doctor | undefined };
 
 function AppointmentCard({ appointment, doctor }: CardProps) {
   return (
-    <li className="space-y-2 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium">
+    <li className={`${card} space-y-4 p-4 sm:p-5`}>
+      <div className="flex items-start gap-4">
+        <DateBlock date={appointment.date} />
+        <div className="min-w-0 flex-1 space-y-1">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <p className="font-medium text-slate-900">
+              {doctor ? (
+                <>
+                  {doctor.name} <span className="font-normal text-slate-500">· {doctor.specialty}</span>
+                </>
+              ) : (
+                "Unknown doctor"
+              )}
+            </p>
+            <StatusBadge status={appointment.status} />
+          </div>
+          <p className="flex items-center gap-1.5 text-sm text-slate-600">
+            <Clock aria-hidden className="size-4 text-slate-400" />
             {formatDay(appointment.date)} at {appointment.time}
           </p>
-          <p className="text-sm text-slate-600">
-            {doctor ? `${doctor.name} · ${doctor.specialty}` : "Unknown doctor"}
-          </p>
+          {appointment.reason && <p className="text-sm text-slate-600">Reason: {appointment.reason}</p>}
         </div>
-        <StatusBadge status={appointment.status} />
       </div>
-      {appointment.reason && <p className="text-sm text-slate-600">Reason: {appointment.reason}</p>}
       {appointment.status === "completed" && <OutcomeDetails outcome={appointment.outcome} />}
     </li>
   );
@@ -39,7 +61,7 @@ function MyAppointments() {
   const demo = useDemo();
   const bookedId = useSearchParams().get("booked");
 
-  if (demo.kind === "loading") return <p className="text-slate-500">Loading…</p>;
+  if (demo.kind === "loading") return <p className="text-sm text-slate-500">Loading…</p>;
   const session = demo.session;
   if (session?.role !== "patient") return <SignInPrompt role="patient" />;
 
@@ -53,30 +75,26 @@ function MyAppointments() {
   const justBooked = mine.find((a) => a.id === bookedId);
 
   return (
-    <div className="space-y-8">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">My appointments</h1>
-        <Link
-          href="/patient/book"
-          className="rounded-md bg-teal-700 px-4 py-2.5 font-medium text-white hover:bg-teal-800"
-        >
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">My appointments</h1>
+        <Link href="/patient/book" className={primaryButton}>
+          <Plus aria-hidden className="size-4" />
           Book an appointment
         </Link>
       </div>
 
       {justBooked && (
-        <p role="status" className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+        <Banner tone="success">
           Appointment booked with {findDoctor(justBooked.doctorId)?.name ?? "your doctor"} on{" "}
           {formatDay(justBooked.date)} at {justBooked.time}.
-        </p>
+        </Banner>
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Upcoming</h2>
+        <SectionTitle title="Upcoming" count={upcoming.length} />
         {upcoming.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-slate-500">
-            No upcoming appointments.
-          </p>
+          <EmptyState icon={<CalendarX aria-hidden />} text="No upcoming appointments." />
         ) : (
           <ul className="space-y-3">
             {upcoming.map((a) => (
@@ -87,11 +105,9 @@ function MyAppointments() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Completed</h2>
+        <SectionTitle title="Completed" count={completed.length} />
         {completed.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-slate-300 p-4 text-slate-500">
-            No completed consultations yet.
-          </p>
+          <EmptyState icon={<ClipboardList aria-hidden />} text="No completed consultations yet." />
         ) : (
           <ul className="space-y-3">
             {completed.map((a) => (
@@ -106,7 +122,7 @@ function MyAppointments() {
 
 export default function PatientPage() {
   return (
-    <Suspense fallback={<p className="text-slate-500">Loading…</p>}>
+    <Suspense fallback={<p className="text-sm text-slate-500">Loading…</p>}>
       <MyAppointments />
     </Suspense>
   );

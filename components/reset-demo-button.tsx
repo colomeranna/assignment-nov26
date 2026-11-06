@@ -1,8 +1,10 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resetDemoData, signOut } from "@/lib/store";
+import { focusRing, quietButton } from "./ui";
 
 export function ResetDemoButton() {
   const router = useRouter();
@@ -17,24 +19,33 @@ export function ResetDemoButton() {
 
   if (!isConfirming) {
     return (
-      <button
-        type="button"
-        onClick={() => setIsConfirming(true)}
-        className="rounded-md border border-slate-300 px-2.5 py-1 text-sm text-slate-600 hover:bg-slate-50"
-      >
+      <button type="button" onClick={() => setIsConfirming(true)} className={quietButton}>
+        <RotateCcw aria-hidden className="size-4" />
         Reset demo data
       </button>
     );
   }
 
   return (
-    <div role="alertdialog" aria-label="Reset demo data" className="w-full space-y-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 sm:w-auto">
+    <div
+      role="alertdialog"
+      aria-label="Reset demo data"
+      className="flex w-full flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:w-auto sm:max-w-sm"
+    >
       <p>This clears your bookings and consultations and restores the sample data.</p>
       <div className="flex gap-2">
-        <button type="button" onClick={reset} className="rounded-md bg-amber-700 px-3 py-1 font-medium text-white hover:bg-amber-800">
+        <button
+          type="button"
+          onClick={reset}
+          className={`rounded-lg bg-amber-600 px-3 py-1.5 font-medium text-white hover:bg-amber-700 ${focusRing}`}
+        >
           Reset
         </button>
-        <button type="button" onClick={() => setIsConfirming(false)} className="rounded-md border border-amber-300 px-3 py-1 hover:bg-amber-100">
+        <button
+          type="button"
+          onClick={() => setIsConfirming(false)}
+          className={`rounded-lg border border-amber-300 bg-white px-3 py-1.5 hover:bg-amber-100 ${focusRing}`}
+        >
           Cancel
         </button>
       </div>

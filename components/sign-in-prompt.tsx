@@ -1,12 +1,15 @@
+import { LogIn } from "lucide-react";
 import Link from "next/link";
+import { card, primaryButton } from "./ui";
 
 type Props = { role: "patient" | "doctor" };
 
 export function SignInPrompt({ role }: Props) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 text-center shadow-sm">
-      <p className="text-slate-600">This page is for signed-in {role}s.</p>
-      <Link href="/" className="mt-3 inline-block font-medium text-teal-700 underline">
+    <div className={`${card} mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center`}>
+      <LogIn aria-hidden className="size-6 text-slate-400" />
+      <p className="text-sm text-slate-600">This page is for signed-in {role}s.</p>
+      <Link href="/" className={primaryButton}>
         Go to the start page
       </Link>
     </div>
