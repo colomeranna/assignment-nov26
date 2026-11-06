@@ -1,15 +1,15 @@
 "use client";
 
-import { Info, LogOut } from "lucide-react";
+import { ChevronDown, Info, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ResetDemoButton } from "@/components/reset-demo-button";
-import { Avatar, Logo, Select, focusRing, quietButton } from "@/components/ui";
+import { Avatar, Logo, focusRing, inputClass, quietButton } from "@/components/ui";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, signOut, useDemo, useIsInMemory } from "@/lib/store";
 import type { DemoData, Session } from "@/lib/types";
 
-type Identity = { key: string; name: string; role: string; label: string; session: Session };
+type Identity = { key: string; name: string; label: string; session: Session };
 
 function sessionKey(session: Session): string {
   return session.role === "patient" ? `patient:${session.patientId}` : `doctor:${session.doctorId}`;
@@ -22,7 +22,6 @@ function listIdentities(data: DemoData): Identity[] {
         {
           key: `patient:${patient.id}`,
           name: patient.name,
-          role: "Patient",
           label: `${patient.name} · Patient`,
           session: { role: "patient", patientId: patient.id },
         },
@@ -31,7 +30,6 @@ function listIdentities(data: DemoData): Identity[] {
   const doctors: Identity[] = data.doctors.map((d) => ({
     key: `doctor:${d.id}`,
     name: d.name,
-    role: d.specialty,
     label: `${d.name} · ${d.specialty}`,
     session: { role: "doctor", doctorId: d.id },
   }));
@@ -65,7 +63,7 @@ export function Header() {
 
   return (
     <header className="bg-white">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 sm:justify-between sm:gap-x-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-5xl flex-nowrap items-center justify-between gap-3 px-4 sm:gap-4 sm:px-6">
         <Link
           href="/"
           aria-label="Clinic Portal"
@@ -75,47 +73,50 @@ export function Header() {
           <span className="hidden sm:inline">Clinic Portal</span>
         </Link>
 
-        <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-x-1 gap-y-2 sm:flex-none sm:gap-x-2">
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-1 sm:gap-2">
           {current !== undefined && (
             <>
-              <div className="hidden min-w-0 items-center gap-2.5 pr-1 sm:flex">
-                <Avatar name={current.name} size="sm" />
-                <div className="min-w-0 leading-tight">
-                  <p className="truncate text-sm font-medium text-slate-900">{current.name}</p>
-                  <p className="truncate text-xs text-slate-500">{current.role}</p>
-                </div>
-              </div>
-              <label htmlFor="role-switcher" className="sr-only">
-                Switch role
-              </label>
-              <Select
-                id="role-switcher"
-                value={current.key}
-                onChange={(e) => switchTo(e.target.value)}
-                className="min-w-0 flex-1 basis-0 sm:w-64 sm:flex-none sm:basis-auto"
+              <label
+                htmlFor="role-switcher"
+                className="sr-only shrink-0 text-xs whitespace-nowrap text-slate-500 sm:not-sr-only"
               >
-                {identities.map((i) => (
-                  <option key={i.key} value={i.key}>
-                    {i.label}
-                  </option>
-                ))}
-              </Select>
+                Viewing as
+              </label>
+              <div className="relative min-w-0 flex-1 sm:w-52 sm:flex-none md:w-72">
+                <span className="pointer-events-none absolute top-1/2 left-2 hidden -translate-y-1/2 sm:inline-flex">
+                  <Avatar name={current.name} size="xs" />
+                </span>
+                <select
+                  id="role-switcher"
+                  value={current.key}
+                  onChange={(e) => switchTo(e.target.value)}
+                  className={`${inputClass} appearance-none truncate pr-10 sm:pl-10`}
+                >
+                  {identities.map((i) => (
+                    <option key={i.key} value={i.key}>
+                      {i.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  aria-hidden
+                  className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-slate-400"
+                />
+              </div>
+              <span aria-hidden className="mx-1 hidden h-6 w-px shrink-0 bg-slate-200 sm:block" />
               <button
                 type="button"
                 onClick={handleSignOut}
                 aria-label="Sign out"
                 title="Sign out"
-                className={quietButton}
+                className={`${quietButton} shrink-0 px-2 sm:px-2.5`}
               >
                 <LogOut aria-hidden className="size-4" />
                 <span className="hidden sm:inline">Sign out</span>
               </button>
             </>
           )}
-          {demo.kind === "ready" && demo.session === null && (
-            <span className="px-2.5 text-sm text-slate-500">Not signed in</span>
-          )}
-          <ResetDemoButton compact />
+          <ResetDemoButton />
         </div>
       </div>
       <div className="flex items-start justify-center gap-1.5 border-y border-t-slate-200 border-b-teal-100 bg-teal-50 px-4 py-1 text-center text-xs text-teal-800">

@@ -168,6 +168,7 @@ function initialsOf(name: string): string {
 }
 
 const AVATAR_SIZES = {
+  xs: "size-6 text-[10px]",
   sm: "size-8 text-xs",
   md: "size-10 text-sm",
   lg: "size-14 text-lg",
