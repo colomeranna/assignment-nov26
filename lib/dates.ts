@@ -47,3 +47,15 @@ export function formatShortDay(date: string): string {
     month: "short",
   });
 }
+
+export function ageOn(dateOfBirth: string, today: Date): number {
+  const born = parseLocalDate(dateOfBirth);
+  const hadBirthday =
+    today.getMonth() > born.getMonth() ||
+    (today.getMonth() === born.getMonth() && today.getDate() >= born.getDate());
+  return today.getFullYear() - born.getFullYear() - (hadBirthday ? 0 : 1);
+}
+
+export function formatLongDate(date: string): string {
+  return parseLocalDate(date).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+}

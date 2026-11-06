@@ -7,6 +7,7 @@ import { createSeedData } from "./seed";
 import type {
   Appointment,
   BookedAppointment,
+  CompletedAppointment,
   ConsultationOutcome,
   DemoData,
   Doctor,
@@ -202,4 +203,33 @@ export function bookAppointment(request: BookingRequest): BookingResult {
   };
   write(DATA_KEY, { ...data, appointments: [...data.appointments, appointment] });
   return { kind: "booked", appointment };
+}
+
+export type CompletionRequest = {
+  appointmentId: string;
+  doctorId: string;
+  outcome: Omit<ConsultationOutcome, "completedAt">;
+};
+
+export type CompletionResult =
+  | { kind: "completed"; appointment: CompletedAppointment }
+  | { kind: "not-found" }
+  | { kind: "already-completed" };
+
+export function completeConsultation({ appointmentId, doctorId, outcome }: CompletionRequest): CompletionResult {
+  const data = readData();
+  const existing = data.appointments.find((a) => a.id === appointmentId && a.doctorId === doctorId);
+  if (existing === undefined) return { kind: "not-found" };
+  if (existing.status === "completed") return { kind: "already-completed" };
+
+  const appointment: CompletedAppointment = {
+    ...existing,
+    status: "completed",
+    outcome: { ...outcome, completedAt: toLocalDateTime(new Date()) },
+  };
+  write(DATA_KEY, {
+    ...data,
+    appointments: data.appointments.map((a) => (a.id === appointmentId ? appointment : a)),
+  });
+  return { kind: "completed", appointment };
 }

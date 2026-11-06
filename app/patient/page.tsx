@@ -3,26 +3,15 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { OutcomeDetails } from "@/components/outcome-details";
 import { SignInPrompt } from "@/components/sign-in-prompt";
+import { StatusBadge } from "@/components/status-badge";
 import { formatDay } from "@/lib/dates";
 import { useDemo } from "@/lib/store";
-import type { Appointment, CompletedAppointment, Doctor } from "@/lib/types";
+import type { Appointment, Doctor } from "@/lib/types";
 
 const byDateTime = (a: Appointment, b: Appointment) =>
   `${a.date}T${a.time}`.localeCompare(`${b.date}T${b.time}`);
-
-function StatusBadge({ status }: Pick<Appointment, "status">) {
-  switch (status) {
-    case "booked":
-      return <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">Booked</span>;
-    case "completed":
-      return <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">Completed</span>;
-    default: {
-      const _exhaustive: never = status;
-      return _exhaustive;
-    }
-  }
-}
 
 type CardProps = { appointment: Appointment; doctor: Doctor | undefined };
 
@@ -41,26 +30,8 @@ function AppointmentCard({ appointment, doctor }: CardProps) {
         <StatusBadge status={appointment.status} />
       </div>
       {appointment.reason && <p className="text-sm text-slate-600">Reason: {appointment.reason}</p>}
-      {appointment.status === "completed" && <OutcomeDetails appointment={appointment} />}
+      {appointment.status === "completed" && <OutcomeDetails outcome={appointment.outcome} />}
     </li>
-  );
-}
-
-function OutcomeDetails({ appointment }: { appointment: CompletedAppointment }) {
-  const { diagnosis, prescription, completedAt } = appointment.outcome;
-  return (
-    <dl className="grid gap-1 rounded-md bg-slate-50 p-3 text-sm sm:grid-cols-[8rem_1fr]">
-      <dt className="text-slate-500">Diagnosis</dt>
-      <dd>{diagnosis}</dd>
-      <dt className="text-slate-500">Prescription</dt>
-      <dd>
-        {prescription
-          ? `${prescription.medication} — ${prescription.dosage}, for ${prescription.duration}`
-          : "None"}
-      </dd>
-      <dt className="text-slate-500">Consultation</dt>
-      <dd>{formatDay(completedAt.slice(0, 10))}</dd>
-    </dl>
   );
 }
 
