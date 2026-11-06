@@ -1,10 +1,10 @@
 "use client";
 
-import { LogOut, Plus } from "lucide-react";
+import { Info, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ResetDemoButton } from "@/components/reset-demo-button";
-import { Avatar, Select, focusRing, quietButton } from "@/components/ui";
+import { Avatar, Logo, Select, focusRing, quietButton } from "@/components/ui";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, signOut, useDemo, useIsInMemory } from "@/lib/store";
 import type { DemoData, Session } from "@/lib/types";
@@ -42,14 +42,6 @@ export function homePath(session: Session): string {
   return session.role === "patient" ? "/patient" : "/doctor";
 }
 
-function Logo() {
-  return (
-    <span aria-hidden className="inline-flex size-8 items-center justify-center rounded-lg bg-teal-600 text-white shadow-sm">
-      <Plus className="size-5" strokeWidth={3} />
-    </span>
-  );
-}
-
 export function Header() {
   const demo = useDemo();
   const isInMemory = useIsInMemory();
@@ -72,7 +64,7 @@ export function Header() {
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white">
+    <header className="bg-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-3 px-4 py-3 sm:justify-between sm:gap-x-4 sm:px-6">
         <Link
           href="/"
@@ -126,13 +118,16 @@ export function Header() {
           <ResetDemoButton compact />
         </div>
       </div>
-      <div className="border-t border-amber-100 bg-amber-50/70 px-4 py-1 text-center text-xs text-amber-800">
-        Prototype: simulated sign-in. Data is saved in this browser only.
-        {isInMemory && (
-          <span className="block font-medium sm:ml-1 sm:inline">
-            Your browser blocked storage, so changes will be lost on reload.
-          </span>
-        )}
+      <div className="flex items-start justify-center gap-1.5 border-y border-t-slate-200 border-b-teal-100 bg-teal-50 px-4 py-1 text-center text-xs text-teal-800">
+        <Info aria-hidden className="mt-px size-3.5 shrink-0 text-teal-600" />
+        <p>
+          Prototype: simulated sign-in. Data is saved in this browser only.
+          {isInMemory && (
+            <span className="block font-medium sm:ml-1 sm:inline">
+              Your browser blocked storage, so changes will be lost on reload.
+            </span>
+          )}
+        </p>
       </div>
     </header>
   );

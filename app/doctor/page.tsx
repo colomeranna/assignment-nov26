@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { Avatar, EmptyState, NewTag, SectionTitle, card } from "@/components/ui";
+import { Avatar, EmptyState, NewTag, SectionTitle, brandSoft, card } from "@/components/ui";
 import { dateParts, formatDay, toLocalDate } from "@/lib/dates";
 import { isNewBooking } from "@/lib/seed";
 import { useDemo } from "@/lib/store";
@@ -30,7 +30,7 @@ type TileProps = { icon: ReactNode; label: string; count: number };
 function CountTile({ icon, label, count }: TileProps) {
   return (
     <div className={`${card} flex items-center gap-3 p-4`}>
-      <span className="hidden size-10 items-center justify-center rounded-lg bg-teal-50 text-teal-600 sm:inline-flex">
+      <span className={`hidden size-10 items-center justify-center rounded-lg sm:inline-flex ${brandSoft} [&_svg]:text-teal-600`}>
         {icon}
       </span>
       <div>
@@ -50,7 +50,7 @@ function AppointmentRow({ appointment, patient, showDate, isNew }: RowProps) {
     <li>
       <Link
         href={`/doctor/appointments/${encodeURIComponent(appointment.id)}`}
-        className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:bg-teal-50/60 focus-visible:outline-none sm:gap-4"
+        className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 focus-visible:bg-teal-50 focus-visible:outline-none sm:gap-4"
       >
         <span className="w-12 shrink-0 text-sm font-semibold text-slate-900 tabular-nums">
           {showDate && (
@@ -133,7 +133,7 @@ function Dashboard({ data, doctor }: DashboardProps) {
           <div className="space-y-4">
             {groupByDay(otherBooked).map((group) => (
               <div key={group.date} className={`${card} overflow-hidden`}>
-                <h3 className="border-b border-slate-100 bg-slate-50/80 px-4 py-2 text-xs font-medium text-slate-600">
+                <h3 className="border-b border-slate-100 bg-slate-50/80 px-4 py-2 text-xs font-medium text-slate-500">
                   {formatDay(group.date)}
                   {group.date < today && " · past, not completed"}
                 </h3>

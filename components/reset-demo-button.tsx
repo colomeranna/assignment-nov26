@@ -1,10 +1,10 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { CircleAlert, RotateCcw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resetDemoData, signOut } from "@/lib/store";
-import { focusRing, quietButton } from "./ui";
+import { card, dangerButton, quietButton, secondaryButton } from "./ui";
 
 type Props = {
   /** Icon-only below the sm breakpoint, for the phone header. */
@@ -41,24 +41,19 @@ export function ResetDemoButton({ compact = false }: Props) {
     <div
       role="alertdialog"
       aria-label="Reset demo data"
-      className="flex w-full flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 sm:w-auto sm:max-w-sm"
+      className={`${card} flex w-full gap-3 p-4 text-sm text-slate-700 sm:w-auto sm:max-w-sm`}
     >
-      <p>This clears your bookings and consultations and restores the sample data.</p>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={reset}
-          className={`rounded-lg bg-amber-600 px-3 py-1.5 font-medium text-white hover:bg-amber-700 ${focusRing}`}
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          onClick={() => setIsConfirming(false)}
-          className={`rounded-lg border border-amber-300 bg-white px-3 py-1.5 hover:bg-amber-100 ${focusRing}`}
-        >
-          Cancel
-        </button>
+      <CircleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-rose-600" />
+      <div className="space-y-3">
+        <p>This clears your bookings and consultations and restores the sample data.</p>
+        <div className="flex gap-2">
+          <button type="button" onClick={reset} className={`${dangerButton} px-3 py-1.5`}>
+            Reset
+          </button>
+          <button type="button" onClick={() => setIsConfirming(false)} className={`${secondaryButton} px-3 py-1.5`}>
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

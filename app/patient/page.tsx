@@ -7,7 +7,7 @@ import { Suspense } from "react";
 import { OutcomeDetails } from "@/components/outcome-details";
 import { SignInPrompt } from "@/components/sign-in-prompt";
 import { StatusBadge } from "@/components/status-badge";
-import { Banner, EmptyState, NewTag, SectionTitle, card, primaryButton } from "@/components/ui";
+import { Banner, EmptyState, NewTag, SectionTitle, brandSoft, card, primaryButton } from "@/components/ui";
 import { dateParts, formatDay } from "@/lib/dates";
 import { isNewOutcome } from "@/lib/seed";
 import { useDemo } from "@/lib/store";
@@ -19,7 +19,7 @@ const byDateTime = (a: Appointment, b: Appointment) =>
 function DateBlock({ date }: { date: string }) {
   const { day, month } = dateParts(date);
   return (
-    <div className="flex size-14 shrink-0 flex-col items-center justify-center rounded-xl bg-teal-50 text-teal-700 ring-1 ring-teal-100">
+    <div className={`flex size-14 shrink-0 flex-col items-center justify-center rounded-xl ${brandSoft}`}>
       <span className="text-xl leading-none font-semibold tabular-nums">{day}</span>
       <span className="mt-0.5 text-xs font-medium uppercase">{month}</span>
     </div>
@@ -49,11 +49,11 @@ function AppointmentCard({ appointment, doctor, seededAt }: CardProps) {
               <StatusBadge status={appointment.status} />
             </span>
           </div>
-          <p className="flex items-center gap-1.5 text-sm text-slate-600">
+          <p className="flex items-center gap-1.5 text-sm text-slate-500">
             <Clock aria-hidden className="size-4 text-slate-400" />
             {formatDay(appointment.date)} at {appointment.time}
           </p>
-          {appointment.reason && <p className="text-sm text-slate-600">Reason: {appointment.reason}</p>}
+          {appointment.reason && <p className="text-sm text-slate-500">Reason: {appointment.reason}</p>}
         </div>
       </div>
       {appointment.status === "completed" && <OutcomeDetails outcome={appointment.outcome} />}

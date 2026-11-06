@@ -6,7 +6,20 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { SignInPrompt } from "@/components/sign-in-prompt";
-import { Avatar, Banner, Label, card, focusRing, inputClass, primaryButton } from "@/components/ui";
+import {
+  Avatar,
+  Banner,
+  Label,
+  card,
+  choiceIdle,
+  choiceSelected,
+  choiceSelectedCard,
+  choiceUnavailable,
+  focusRing,
+  inputClass,
+  linkClass,
+  primaryButton,
+} from "@/components/ui";
 import { dateParts, formatDay } from "@/lib/dates";
 import { getBookableDays, getSlots } from "@/lib/schedule";
 import type { SlotStatus } from "@/lib/schedule";
@@ -34,7 +47,7 @@ function StepNumber({ n, done }: { n: number; done: boolean }) {
   return (
     <span
       className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
-        done ? "bg-teal-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-300"
+        done ? "bg-teal-600 text-white" : "bg-white text-slate-500 ring-1 ring-slate-200"
       }`}
     >
       {done ? <Check aria-hidden className="size-4" strokeWidth={3} /> : n}
@@ -69,8 +82,6 @@ function StepCard({ n, title, done, children }: StepCardProps) {
     </section>
   );
 }
-
-const selectedRing = "border-teal-600 bg-teal-50/60 ring-2 ring-teal-600";
 
 type FormProps = { data: DemoData; patientId: string };
 
@@ -130,7 +141,7 @@ function BookingForm({ data, patientId }: FormProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <Link href="/patient" className={`inline-flex items-center gap-1.5 rounded text-sm font-medium text-teal-700 hover:text-teal-800 ${focusRing}`}>
+        <Link href="/patient" className={`inline-flex items-center gap-1.5 text-sm ${linkClass}`}>
           <ArrowLeft aria-hidden className="size-4" />
           My appointments
         </Link>
@@ -156,7 +167,7 @@ function BookingForm({ data, patientId }: FormProps) {
                   aria-pressed={d.id === doctorId}
                   onClick={() => chooseDoctor(d.id)}
                   className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-colors ${focusRing} ${
-                    d.id === doctorId ? selectedRing : "border-slate-200 bg-white hover:border-teal-400 hover:bg-slate-50"
+                    d.id === doctorId ? choiceSelectedCard : choiceIdle
                   }`}
                 >
                   <Avatar name={d.name} />
@@ -181,12 +192,10 @@ function BookingForm({ data, patientId }: FormProps) {
                     aria-pressed={isSelected}
                     onClick={() => chooseDay(day)}
                     className={`inline-flex items-baseline gap-1.5 rounded-full border px-4 py-2 text-sm transition-colors ${focusRing} ${
-                      isSelected
-                        ? "border-teal-600 bg-teal-600 text-white"
-                        : "border-slate-200 bg-white text-slate-700 hover:border-teal-400"
+                      isSelected ? choiceSelected : choiceIdle
                     }`}
                   >
-                    <span className={isSelected ? "text-teal-100" : "text-slate-500"}>{weekday}</span>
+                    <span className={isSelected ? "text-teal-50" : "text-slate-500"}>{weekday}</span>
                     <span className="font-medium">
                       {dayNumber} {month}
                     </span>
@@ -212,9 +221,7 @@ function BookingForm({ data, patientId }: FormProps) {
                         setError(null);
                       }}
                       className={`h-12 rounded-lg border text-sm font-medium tabular-nums transition-colors ${focusRing} ${
-                        slot.time === time
-                          ? "border-teal-600 bg-teal-600 text-white shadow-sm"
-                          : "border-slate-200 bg-white text-slate-800 hover:border-teal-400 hover:bg-teal-50/50"
+                        slot.time === time ? choiceSelected : choiceIdle
                       }`}
                     >
                       {slot.time}
@@ -224,7 +231,7 @@ function BookingForm({ data, patientId }: FormProps) {
                       key={slot.time}
                       type="button"
                       disabled
-                      className="h-12 cursor-not-allowed rounded-lg border border-slate-100 bg-slate-100 text-sm text-slate-400"
+                      className={`h-12 rounded-lg border text-sm ${choiceUnavailable}`}
                     >
                       <span className="block leading-tight tabular-nums line-through">{slot.time}</span>
                       <span className="block text-[11px] leading-tight">{UNAVAILABLE_LABEL[slot.status]}</span>
@@ -266,7 +273,7 @@ function BookingForm({ data, patientId }: FormProps) {
             ].map(([label, value]) => (
               <div key={label} className="flex justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
                 <dt className="text-slate-500">{label}</dt>
-                <dd className="text-right font-medium text-slate-900">{value}</dd>
+                <dd className="text-right font-medium text-slate-700">{value}</dd>
               </div>
             ))}
           </dl>

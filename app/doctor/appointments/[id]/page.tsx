@@ -14,9 +14,10 @@ import {
   Label,
   SectionTitle,
   card,
-  focusRing,
   inputClass,
+  linkClass,
   primaryButton,
+  textareaClass,
 } from "@/components/ui";
 import { validateConsultation } from "@/lib/consultation";
 import type { ConsultationErrors, ConsultationForm } from "@/lib/consultation";
@@ -28,7 +29,7 @@ function BackLink() {
   return (
     <Link
       href="/doctor"
-      className={`inline-flex items-center gap-1.5 rounded text-sm font-medium text-teal-700 hover:text-teal-800 ${focusRing}`}
+      className={`inline-flex items-center gap-1.5 text-sm ${linkClass}`}
     >
       <ArrowLeft aria-hidden className="size-4" />
       Back to dashboard
@@ -89,7 +90,7 @@ function ConsultationFormCard({ appointment, onCompleted }: FormProps) {
           onChange={update("diagnosis")}
           aria-invalid={errors.diagnosis !== undefined}
           aria-describedby={errors.diagnosis ? "diagnosis-error" : undefined}
-          className={inputClass}
+          className={textareaClass}
         />
         <FieldError id="diagnosis-error" message={errors.diagnosis} />
       </div>
@@ -186,7 +187,7 @@ function PatientRecord({ data, appointment, patient }: RecordProps) {
               {patient?.name ?? "Unknown patient"}
             </h1>
             {patient && (
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-slate-500">
                 Born {formatLongDate(patient.dateOfBirth)} · {ageOn(patient.dateOfBirth, now)} years
               </p>
             )}
@@ -244,7 +245,7 @@ function PatientRecord({ data, appointment, patient }: RecordProps) {
                     <dl className="mt-2 space-y-1.5 text-sm">
                       <div>
                         <dt className="text-xs text-slate-500">Diagnosis</dt>
-                        <dd className="text-slate-800">{a.outcome.diagnosis}</dd>
+                        <dd className="text-slate-700">{a.outcome.diagnosis}</dd>
                       </div>
                       {a.outcome.prescription && (
                         <div>
@@ -283,7 +284,7 @@ export default function AppointmentRecordPage({ params }: PageProps) {
       <div className={`${card} mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center`}>
         <SearchX aria-hidden className="size-6 text-slate-400" />
         <h1 className="text-lg font-semibold text-slate-900">Appointment not found</h1>
-        <p className="text-sm text-slate-600">This appointment doesn&apos;t exist or isn&apos;t one of yours.</p>
+        <p className="text-sm text-slate-500">This appointment doesn&apos;t exist or isn&apos;t one of yours.</p>
         <BackLink />
       </div>
     );

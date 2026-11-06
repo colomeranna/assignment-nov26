@@ -7,7 +7,7 @@ export function PrescriptionText({ prescription }: { prescription: Prescription 
   return (
     <span>
       <span className="font-medium text-slate-900">{prescription.medication}</span>
-      {details.length > 0 && <span className="text-slate-600"> · {details.join(" · ")}</span>}
+      {details.length > 0 && <span className="text-slate-500"> · {details.join(" · ")}</span>}
     </span>
   );
 }
@@ -17,7 +17,7 @@ type Props = { outcome: ConsultationOutcome };
 export function OutcomeDetails({ outcome }: Props) {
   const { diagnosis, prescription, completedAt } = outcome;
   return (
-    <dl className="grid gap-3 rounded-lg bg-slate-50 p-4 text-sm ring-1 ring-slate-200/70 ring-inset sm:grid-cols-3">
+    <dl className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-3">
       <div>
         <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase">Consultation date</dt>
         <dd className="mt-0.5 text-slate-900">{formatDay(completedAt.slice(0, 10))}</dd>

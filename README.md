@@ -6,12 +6,14 @@ A clickable prototype of a clinic portal for patients and doctors, built for a 2
 
 ## How to try it
 
-1. Continue as Laura and book an appointment with any doctor.
-2. Use the role switcher in the header to become that doctor, and find the booking in the dashboard.
-3. Open the record and complete the consultation with a diagnosis and prescription.
-4. Switch back to Laura to see the outcome.
+Try the full journey (about 2 minutes):
 
-Data is saved in this browser only, so each tester has their own copy.
+1. Sign in as Laura, choose a doctor and an available time, and book.
+2. Switch to that doctor with the role switcher at the top of the page. The booking is on their dashboard.
+3. Open the patient record and add a diagnosis and a prescription.
+4. Switch back to Laura to see the consultation outcome.
+
+Data is saved in your browser only, so each tester has their own copy. Use Reset demo data at the top of the page to start over.
 
 ## What's included
 

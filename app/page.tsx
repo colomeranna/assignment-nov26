@@ -1,21 +1,20 @@
 "use client";
 
-import { ArrowRight, Stethoscope, UserRound } from "lucide-react";
+import { Stethoscope, UserRound } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { ReactNode } from "react";
-import { ResetDemoButton } from "@/components/reset-demo-button";
-import { Banner, Select, card, primaryButton, secondaryButton } from "@/components/ui";
+import { Banner, ReadOnlyField, Select, brandSoft, card, primaryButton } from "@/components/ui";
 import { DEMO_PATIENT_ID } from "@/lib/seed";
 import { setSession, useDemo } from "@/lib/store";
 import type { Session } from "@/lib/types";
 import { homePath } from "./header";
 
-const STEPS = [
-  "Continue as Laura and book an appointment with any doctor.",
-  "Use the role switcher in the header to become that doctor, and find the booking in the dashboard.",
-  "Open the record and complete the consultation with a diagnosis and prescription.",
-  "Switch back to Laura to see the outcome.",
+const JOURNEY = [
+  "Sign in as Laura, choose a doctor and an available time, and book.",
+  "Switch to that doctor with the role switcher at the top of the page. The booking is on their dashboard.",
+  "Open the patient record and add a diagnosis and a prescription.",
+  "Switch back to Laura to see the consultation outcome.",
 ] as const;
 
 function ResetNotice() {
@@ -24,29 +23,47 @@ function ResetNotice() {
   return <Banner tone="success">Demo data reset.</Banner>;
 }
 
-type RoleCardProps = { icon: ReactNode; title: string; description: string; children: ReactNode };
+type RoleCardProps = {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  fieldId: string;
+  field: ReactNode;
+  action: ReactNode;
+};
 
-function RoleCard({ icon, title, description, children }: RoleCardProps) {
+/** Both role cards share this shape, so their fields and buttons line up. */
+function RoleCard({ icon, title, description, fieldId, field, action }: RoleCardProps) {
   return (
-    <section className={`${card} flex flex-col gap-4 p-6`}>
-      <span className="inline-flex size-11 items-center justify-center rounded-xl bg-teal-50 text-teal-600 ring-1 ring-teal-100">
-        {icon}
-      </span>
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-        <p className="text-sm text-slate-600">{description}</p>
+    <section className={`${card} flex h-full flex-col gap-6 p-6`}>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <span className={`inline-flex size-10 shrink-0 items-center justify-center rounded-lg ${brandSoft} [&_svg]:text-teal-600`}>
+            {icon}
+          </span>
+          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+        </div>
+        <p className="text-sm text-slate-500">{description}</p>
       </div>
-      <div className="mt-auto space-y-3">{children}</div>
+      <div className="mt-auto space-y-3">
+        <div>
+          <label htmlFor={fieldId} className="mb-1.5 block text-xs font-medium tracking-wide text-slate-500 uppercase">
+            Sign in as
+          </label>
+          {field}
+        </div>
+        {action}
+      </div>
     </section>
   );
 }
 
-function HowToTry() {
+function Journey() {
   return (
     <section className={`${card} space-y-4 p-6`}>
-      <h2 className="text-base font-semibold text-slate-900">How to try it</h2>
+      <h2 className="text-base font-semibold text-slate-900">Try the full journey (about 2 minutes)</h2>
       <ol className="space-y-3">
-        {STEPS.map((step, index) => (
+        {JOURNEY.map((step, index) => (
           <li key={step} className="flex gap-3 text-sm text-slate-700">
             <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-teal-600 text-xs font-semibold text-white">
               {index + 1}
@@ -55,8 +72,9 @@ function HowToTry() {
           </li>
         ))}
       </ol>
-      <p className="border-t border-slate-100 pt-3 text-sm text-slate-500">
-        Data is saved in this browser only, so each tester has their own copy.
+      <p className="border-t border-slate-200 pt-3 text-sm text-slate-500">
+        Data is saved in your browser only, so each tester has their own copy. Use Reset demo data at the top of the
+        page to start over.
       </p>
     </section>
   );
@@ -82,59 +100,61 @@ export default function StartPage() {
         <ResetNotice />
       </Suspense>
 
-      <div className="space-y-2 py-2 text-center sm:py-4">
+      <div className="mx-auto max-w-xl space-y-3 py-2 text-center sm:py-4">
         <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Clinic Portal</h1>
-        <p className="text-base text-slate-600">A clickable prototype with simulated sign-in: pick who you want to be.</p>
+        <p className="text-base text-slate-500">
+          Patients book appointments. Doctors manage consultations. No account needed: choose a role below to sign in.
+        </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        <RoleCard
-          icon={<UserRound aria-hidden className="size-5" />}
-          title="Patient"
-          description="Book appointments and see your consultation outcomes."
-        >
-          <button
-            type="button"
-            onClick={() => continueAs({ role: "patient", patientId: DEMO_PATIENT_ID })}
-            className={`${primaryButton} w-full`}
-          >
-            Continue as patient (Laura Martín)
-            <ArrowRight aria-hidden className="size-4" />
-          </button>
-        </RoleCard>
-
-        <RoleCard
-          icon={<Stethoscope aria-hidden className="size-5" />}
-          title="Doctor"
-          description="See your schedule and complete consultations."
-        >
-          <label htmlFor="doctor-picker" className="sr-only">
-            Doctor
-          </label>
-          <Select id="doctor-picker" value={selectedDoctorId} onChange={(e) => setDoctorId(e.target.value)}>
-            {demo.data.doctors.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name} · {d.specialty}
-              </option>
-            ))}
-          </Select>
-          <button
-            type="button"
-            disabled={selectedDoctorId === ""}
-            onClick={() => continueAs({ role: "doctor", doctorId: selectedDoctorId })}
-            className={`${secondaryButton} w-full`}
-          >
-            Continue as doctor
-            <ArrowRight aria-hidden className="size-4" />
-          </button>
-        </RoleCard>
+      <div className="space-y-3">
+        <p className="text-sm font-medium tracking-wide text-slate-500 uppercase">Sign in (simulated)</p>
+        <div className="grid items-stretch gap-6 sm:grid-cols-2">
+          <RoleCard
+            icon={<UserRound aria-hidden className="size-5" />}
+            title="I'm a patient"
+            description="Choose a doctor and an available time, book an appointment, and see your diagnosis and prescription once the consultation is complete."
+            fieldId="patient-identity"
+            field={<ReadOnlyField id="patient-identity" value="Laura Martín · Patient" icon={<UserRound />} />}
+            action={
+              <button
+                type="button"
+                onClick={() => continueAs({ role: "patient", patientId: DEMO_PATIENT_ID })}
+                className={`${primaryButton} w-full`}
+              >
+                Sign in as patient
+              </button>
+            }
+          />
+          <RoleCard
+            icon={<Stethoscope aria-hidden className="size-5" />}
+            title="I'm a doctor"
+            description="See today's and upcoming appointments, open patient records, and add a diagnosis and prescription."
+            fieldId="doctor-picker"
+            field={
+              <Select id="doctor-picker" value={selectedDoctorId} onChange={(e) => setDoctorId(e.target.value)}>
+                {demo.data.doctors.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} · {d.specialty}
+                  </option>
+                ))}
+              </Select>
+            }
+            action={
+              <button
+                type="button"
+                disabled={selectedDoctorId === ""}
+                onClick={() => continueAs({ role: "doctor", doctorId: selectedDoctorId })}
+                className={`${primaryButton} w-full`}
+              >
+                Sign in as doctor
+              </button>
+            }
+          />
+        </div>
       </div>
 
-      <HowToTry />
-
-      <div className="flex justify-center">
-        <ResetDemoButton />
-      </div>
+      <Journey />
     </div>
   );
 }
